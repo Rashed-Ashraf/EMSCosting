@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { useEmsStore } from "@/stores/appStore";
+import { useEmsStore, useHasHydrated } from "@/stores/appStore";
 import { searchProducts } from "@/lib/search/productSearch";
 import { matchBlindQuotation, parseElectricalQuery } from "@/lib/search/blindQuotation";
 import { formatCurrency, formatPercent } from "@/lib/calculations";
@@ -48,8 +48,14 @@ export default function CostingPage() {
 
     const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3500); };
 
-    // Auto-init session if none exists
-    useEffect(() => { if (!costingSession) initSession(); }, [costingSession, initSession]);
+    const hasHydrated = useHasHydrated();
+
+    // Auto-init session if none exists AFTER store has hydrated from IndexedDB
+    useEffect(() => {
+        if (hasHydrated && !costingSession) {
+            initSession();
+        }
+    }, [hasHydrated, costingSession, initSession]);
 
     // Show brand products when brand filter is clicked with empty query
     useEffect(() => {

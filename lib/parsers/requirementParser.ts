@@ -4,6 +4,10 @@
 // Supports both AI (OpenAI Vision & Text) and Local/Offline (pdf-parse & Tesseract OCR)
 // =============================================================================
 
+if (typeof window !== "undefined") {
+    throw new Error("lib/parsers/requirementParser is server-only and cannot be executed in the browser bundle.");
+}
+
 import ExcelJS from "exceljs";
 import OpenAI from "openai";
 import { parsePrice, nanoid } from "../utils";

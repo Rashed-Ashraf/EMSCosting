@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["pdf-parse", "tesseract.js"],
+  // Ensure heavy server-side libraries are never bundled into client bundles
+  serverExternalPackages: [
+    "pdf-parse",
+    "tesseract.js",
+    "exceljs",
+    "@react-pdf/renderer",
+    "openai",
+  ],
 };
 
 export default nextConfig;

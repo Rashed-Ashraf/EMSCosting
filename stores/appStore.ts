@@ -3,8 +3,10 @@
 // =============================================================================
 "use client";
 
+import { useState, useEffect } from "react";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { indexedDbStorage } from "./storage";
 import type {
     AppState,
     PriceListMeta,
@@ -413,21 +415,7 @@ export const useEmsStore = create<EmsStore>()(
         }),
         {
             name: "ems-app-store",
-            storage: createJSONStorage(() => {
-                if (typeof window !== "undefined") {
-                    try {
-                        if (!localStorage.getItem("ems-app-store") && sessionStorage.getItem("ems-app-store")) {
-                            localStorage.setItem("ems-app-store", sessionStorage.getItem("ems-app-store")!);
-                        }
-                    } catch {}
-                    return localStorage;
-                }
-                return {
-                    getItem: () => null,
-                    setItem: () => {},
-                    removeItem: () => {},
-                };
-            }),
+            storage: createJSONStorage(() => indexedDbStorage),
             partialize: (s) => ({
                 brands: s.brands || DEFAULT_BRANDS,
                 priceLists: s.priceLists,
@@ -443,10 +431,32 @@ export const useEmsStore = create<EmsStore>()(
                 boqMatches: s.boqMatches,
             }),
             onRehydrateStorage: () => (state) => {
-                if (state && state.products === undefined) {
+                if (state && (state.products === undefined || state.products === null)) {
                     state.products = seedCatalog as Product[];
                 }
             },
         }
     )
 );
+
+/**
+ * Hook to track whether Zustand async store hydration from IndexedDB has completed.
+ * Prevents premature session creation or UI flickers while loading from IndexedDB.
+ */
+export function useHasHydrated(): boolean {
+    const [hydrated, setHydrated] = useState(false);
+
+    useEffect(() => {
+        const unsub = useEmsStore.persist.onFinishHydration(() => {
+            setHydrated(true);
+        });
+        if (useEmsStore.persist.hasHydrated()) {
+            setHydrated(true);
+        }
+        return () => {
+            unsub();
+        };
+    }, []);
+
+    return hydrated;
+}
