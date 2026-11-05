@@ -330,7 +330,7 @@ export default function RequirementPreviewSection({
                         <table>
                             <thead>
                                 <tr>
-                                    <th style={{ width: "40px" }}>#</th>
+                                    <th className="sticky left-0 z-20 bg-muted-bg text-center w-10 shadow-[1px_0_0_0_var(--border)]">#</th>
                                     <th>Category</th>
                                     <th>Specification / Requirement</th>
                                     <th>Brand / Model</th>
@@ -369,8 +369,8 @@ export default function RequirementPreviewSection({
                                         : (unitPrice > 0 ? unitPrice * (item.qty || 1) : 0);
 
                                     return (
-                                        <tr key={item.id}>
-                                            <td style={{ color: "var(--muted)", fontSize: "12px", fontWeight: 600 }}>
+                                        <tr key={item.id} className="hover:bg-muted-bg/50 transition-colors">
+                                            <td className="sticky left-0 z-10 bg-card-bg text-center text-xs font-semibold text-muted shadow-[1px_0_0_0_var(--border)]">
                                                 {item.lineNo}
                                             </td>
 

@@ -488,8 +488,8 @@ export default function CostingPage() {
                 </div>
 
                 {items.length === 0 ? (
-                    <div style={{ textAlign: "center", padding: "40px", color: "var(--muted)", fontSize: "14px" }}>
-                        No items added yet. Search for products above and click + Add.
+                    <div className="text-center py-10 text-muted text-sm">
+                        No items added yet. Search for products above or upload a requirement document to add items.
                     </div>
                 ) : (
                     <>
@@ -497,7 +497,7 @@ export default function CostingPage() {
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>#</th>
+                                        <th className="sticky left-0 z-20 bg-muted-bg text-center w-10 shadow-[1px_0_0_0_var(--border)]">#</th>
                                         <th>Product Code</th>
                                         <th>Brand</th>
                                         <th>Description</th>
@@ -528,26 +528,26 @@ export default function CostingPage() {
                         </div>
 
                         {/* Totals */}
-                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px" }}>
-                            <div style={{ minWidth: "300px", background: "var(--muted-bg)", borderRadius: "10px", padding: "16px" }}>
-                                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "13px" }}>
-                                    <span style={{ color: "var(--muted)" }}>Subtotal (Cost)</span>
-                                    <span>{formatCurrency(totals?.subtotalCost ?? 0, curr)}</span>
+                        <div className="flex justify-end mt-4">
+                            <div className="min-w-[300px] rounded-xl bg-muted-bg/80 border border-border/70 p-4 space-y-2">
+                                <div className="flex justify-between text-xs sm:text-sm">
+                                    <span className="text-muted">Subtotal (Cost)</span>
+                                    <span className="font-medium text-foreground">{formatCurrency(totals?.subtotalCost ?? 0, curr)}</span>
                                 </div>
-                                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "13px" }}>
-                                    <span style={{ color: "var(--muted)" }}>Subtotal (Selling)</span>
-                                    <span>{formatCurrency(totals?.subtotalSelling ?? 0, curr)}</span>
+                                <div className="flex justify-between text-xs sm:text-sm">
+                                    <span className="text-muted">Subtotal (Selling)</span>
+                                    <span className="font-medium text-foreground">{formatCurrency(totals?.subtotalSelling ?? 0, curr)}</span>
                                 </div>
-                                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", fontSize: "13px" }}>
-                                    <span style={{ color: "var(--muted)" }}>GST ({Math.round((header?.gstRate ?? 0.1) * 100)}%)</span>
-                                    <span>{formatCurrency(totals?.gstAmount ?? 0, curr)}</span>
+                                <div className="flex justify-between text-xs sm:text-sm">
+                                    <span className="text-muted">GST ({Math.round((header?.gstRate ?? 0.1) * 100)}%)</span>
+                                    <span className="font-medium text-foreground">{formatCurrency(totals?.gstAmount ?? 0, curr)}</span>
                                 </div>
-                                <hr className="divider" style={{ margin: "10px 0" }} />
-                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "16px", fontWeight: 700 }}>
+                                <hr className="divider my-2" />
+                                <div className="flex justify-between text-base font-bold text-foreground">
                                     <span>GRAND TOTAL</span>
-                                    <span style={{ color: "var(--accent)" }}>{formatCurrency(totals?.grandTotal ?? 0, curr)}</span>
+                                    <span className="text-accent">{formatCurrency(totals?.grandTotal ?? 0, curr)}</span>
                                 </div>
-                                <div style={{ fontSize: "12px", color: "var(--muted)", marginTop: "4px", textAlign: "right" }}>
+                                <div className="text-xs text-muted text-right">
                                     {items.length} items · {totals?.totalQty ?? 0} units · Avg margin {formatPercent(totals?.averageMargin ?? 0)}
                                 </div>
                             </div>
@@ -562,30 +562,32 @@ export default function CostingPage() {
 function ProductResultCard({ result, currency, onAdd }: { result: SearchResult & { specDetails?: string }; currency: string; onAdd: () => void }) {
     const { product, score, matchType, specDetails } = result;
     return (
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", background: "var(--muted-bg)", borderRadius: "8px", padding: "10px 14px", border: "1px solid var(--border)" }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "2px", flexWrap: "wrap" }}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted-bg/60 rounded-xl p-3 border border-border/80 hover:border-accent/40 transition-colors">
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="badge badge-blue">{product.brand}</span>
-                    <span style={{ fontWeight: 600, fontSize: "13px" }}>{product.productCode}</span>
+                    <span className="font-semibold text-xs text-foreground">{product.productCode}</span>
                     <span className={`badge ${matchType === "exact" ? "badge-green" : matchType === "partial" ? "badge-blue" : "badge-gray"}`}>
                         {Math.round(score * 100)}% {matchType}
                     </span>
                     {specDetails && (
-                        <span style={{ fontSize: "11px", background: "rgba(34,197,94,0.12)", color: "var(--success)", padding: "2px 6px", borderRadius: "4px", fontWeight: 500 }}>
+                        <span className="text-[11px] bg-emerald-500/10 text-success border border-success/20 px-1.5 py-0.5 rounded-sm font-medium">
                             ⚡ {specDetails}
                         </span>
                     )}
                 </div>
-                <div style={{ fontSize: "12px", color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <div className="text-xs text-muted truncate">
                     {product.description}
                 </div>
             </div>
-            <div style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                <div style={{ fontSize: "12px", color: "var(--muted)", textDecoration: "line-through" }}>{formatCurrency(product.listPrice, currency)}</div>
-                <div style={{ fontWeight: 700, fontSize: "14px", color: "var(--success)" }}>{formatCurrency(product.netCost, currency)}</div>
-                <div style={{ fontSize: "11px", color: "var(--muted)" }}>Disc: {formatPercent(product.discount)}</div>
+            <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+                <div className="text-right whitespace-nowrap">
+                    <div className="text-xs text-muted line-through">{formatCurrency(product.listPrice, currency)}</div>
+                    <div className="font-bold text-sm text-success">{formatCurrency(product.netCost, currency)}</div>
+                    <div className="text-[11px] text-muted">Disc: {formatPercent(product.discount)}</div>
+                </div>
+                <button className="btn-primary btn-sm" onClick={onAdd}>+ Add</button>
             </div>
-            <button className="btn-primary btn-sm" onClick={onAdd}>+ Add</button>
         </div>
     );
 }
@@ -598,45 +600,46 @@ function CostingRow({ item, index, currency, onUpdate, onRemove }: {
     onRemove: () => void;
 }) {
     return (
-        <tr>
-            <td style={{ color: "var(--muted)", fontSize: "12px" }}>{index + 1}</td>
-            <td style={{ fontWeight: 600, fontSize: "12px", whiteSpace: "nowrap" }}>{item.product.productCode}</td>
+        <tr className="hover:bg-muted-bg/50 transition-colors">
+            <td className="sticky left-0 z-10 bg-card-bg text-center text-xs font-semibold text-muted shadow-[1px_0_0_0_var(--border)]">{index + 1}</td>
+            <td className="font-semibold text-xs whitespace-nowrap text-foreground">{item.product.productCode}</td>
             <td><span className="badge badge-blue">{item.product.brand}</span></td>
-            <td style={{ maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "12px" }}>
+            <td className="max-w-[200px] truncate text-xs text-foreground">
                 {item.customDescription || item.product.description}
             </td>
             <td>
                 <input
-                    type="number" min="1" style={{ width: "60px", background: "var(--input-bg)", border: "1px solid var(--input-border)", borderRadius: "6px", color: "var(--foreground)", padding: "4px 6px", fontSize: "13px" }}
+                    type="number" min="1"
+                    className="w-16 bg-input-bg border border-input-border rounded-md text-foreground px-1.5 py-1 text-xs focus:border-accent outline-none"
                     value={item.qty}
                     onChange={(e) => onUpdate({ qty: Math.max(1, parseInt(e.target.value) || 1) })}
                 />
             </td>
-            <td style={{ fontSize: "12px" }}>{formatCurrency(item.listPrice, currency)}</td>
-            <td>
+            <td className="text-xs text-foreground whitespace-nowrap">{formatCurrency(item.listPrice, currency)}</td>
+            <td className="whitespace-nowrap">
                 <input
                     type="number" min="0" max="100" step="0.5"
-                    style={{ width: "60px", background: "var(--input-bg)", border: "1px solid var(--input-border)", borderRadius: "6px", color: "var(--foreground)", padding: "4px 6px", fontSize: "13px" }}
+                    className="w-16 bg-input-bg border border-input-border rounded-md text-foreground px-1.5 py-1 text-xs focus:border-accent outline-none"
                     value={Math.round(item.discount * 100)}
                     onChange={(e) => onUpdate({ discount: Math.min(1, Math.max(0, parseFloat(e.target.value) / 100 || 0)) })}
                 />
-                <span style={{ fontSize: "11px", color: "var(--muted)" }}>%</span>
+                <span className="text-[11px] text-muted ml-1">%</span>
             </td>
-            <td style={{ fontWeight: 600, fontSize: "12px", color: "var(--success)" }}>{formatCurrency(item.netCost, currency)}</td>
-            <td>
+            <td className="font-semibold text-xs text-success whitespace-nowrap">{formatCurrency(item.netCost, currency)}</td>
+            <td className="whitespace-nowrap">
                 <input
                     type="number" min="0" max="200" step="0.5"
-                    style={{ width: "60px", background: "var(--input-bg)", border: "1px solid var(--input-border)", borderRadius: "6px", color: "var(--foreground)", padding: "4px 6px", fontSize: "13px" }}
+                    className="w-16 bg-input-bg border border-input-border rounded-md text-foreground px-1.5 py-1 text-xs focus:border-accent outline-none"
                     value={Math.round(item.margin * 100)}
                     onChange={(e) => onUpdate({ margin: Math.max(0, parseFloat(e.target.value) / 100 || 0) })}
                 />
-                <span style={{ fontSize: "11px", color: "var(--muted)" }}>%</span>
+                <span className="text-[11px] text-muted ml-1">%</span>
             </td>
-            <td style={{ fontSize: "12px" }}>{formatCurrency(item.sellingPrice, currency)}</td>
-            <td style={{ fontSize: "12px", color: "var(--muted)" }}>{formatCurrency(item.totalCost, currency)}</td>
-            <td style={{ fontWeight: 700, fontSize: "12px", color: "var(--accent)" }}>{formatCurrency(item.totalSelling, currency)}</td>
-            <td>
-                <button className="btn-danger btn-sm" onClick={onRemove} style={{ padding: "4px 8px" }}>✕</button>
+            <td className="text-xs text-foreground whitespace-nowrap">{formatCurrency(item.sellingPrice, currency)}</td>
+            <td className="text-xs text-muted whitespace-nowrap">{formatCurrency(item.totalCost, currency)}</td>
+            <td className="font-bold text-xs text-accent whitespace-nowrap">{formatCurrency(item.totalSelling, currency)}</td>
+            <td className="text-center">
+                <button className="btn-danger btn-sm px-2 py-1" onClick={onRemove}>✕</button>
             </td>
         </tr>
     );
@@ -644,8 +647,8 @@ function CostingRow({ item, index, currency, onUpdate, onRemove }: {
 
 function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
     return (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }} onClick={onClose}>
-            <div style={{ background: "var(--card-bg)", borderRadius: "14px", border: "1px solid var(--card-border)", boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }} onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs" onClick={onClose}>
+            <div className="bg-card-bg rounded-2xl border border-card-border shadow-2xl overflow-hidden max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
                 {children}
             </div>
         </div>
@@ -767,20 +770,21 @@ function QuotationStep({ onBack }: { onBack: () => void }) {
                     <table>
                         <thead>
                             <tr>
-                                <th>#</th><th>Code</th><th>Brand</th><th>Description</th>
+                                <th className="sticky left-0 z-20 bg-muted-bg text-center w-10 shadow-[1px_0_0_0_var(--border)]">#</th>
+                                <th>Code</th><th>Brand</th><th>Description</th>
                                 <th>Qty</th><th>Unit Price</th><th>Total</th>
                             </tr>
                         </thead>
                         <tbody>
                             {items.map((item, i) => (
-                                <tr key={item.id}>
-                                    <td style={{ color: "var(--muted)" }}>{i + 1}</td>
-                                    <td style={{ fontWeight: 600, fontSize: "12px" }}>{item.product.productCode}</td>
+                                <tr key={item.id} className="hover:bg-muted-bg/50 transition-colors">
+                                    <td className="sticky left-0 z-10 bg-card-bg text-center text-xs font-semibold text-muted shadow-[1px_0_0_0_var(--border)]">{i + 1}</td>
+                                    <td className="font-semibold text-xs whitespace-nowrap text-foreground">{item.product.productCode}</td>
                                     <td><span className="badge badge-blue">{item.product.brand}</span></td>
-                                    <td style={{ fontSize: "12px" }}>{item.product.description}</td>
-                                    <td>{item.qty}</td>
-                                    <td>{formatCurrency(item.sellingPrice, curr)}</td>
-                                    <td style={{ fontWeight: 600, color: "var(--accent)" }}>{formatCurrency(item.totalSelling, curr)}</td>
+                                    <td className="text-xs text-foreground">{item.product.description}</td>
+                                    <td className="text-xs">{item.qty}</td>
+                                    <td className="text-xs whitespace-nowrap">{formatCurrency(item.sellingPrice, curr)}</td>
+                                    <td className="font-semibold text-xs text-accent whitespace-nowrap">{formatCurrency(item.totalSelling, curr)}</td>
                                 </tr>
                             ))}
                         </tbody>

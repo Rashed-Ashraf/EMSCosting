@@ -463,55 +463,42 @@ export default function BlindQuotationPage() {
                             return (
                                 <div
                                     key={product.id}
-                                    style={{
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-                                        padding: "14px 18px",
-                                        background: isHighMatch ? "var(--card-bg)" : "var(--muted-bg)",
-                                        borderRadius: "10px",
-                                        border: isHighMatch ? "1px solid var(--accent)" : "1px solid var(--border)",
-                                        boxShadow: isHighMatch ? "0 2px 10px rgba(59,130,246,0.08)" : "none",
-                                        transition: "all 0.15s",
-                                    }}
+                                    className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border transition-all ${
+                                        isHighMatch
+                                            ? "bg-card-bg border-accent/40 shadow-xs ring-1 ring-accent/10"
+                                            : "bg-muted-bg/50 border-border"
+                                    }`}
                                 >
                                     {/* Left: Product info & match badges */}
-                                    <div style={{ flex: 1, minWidth: 0, paddingRight: "16px" }}>
-                                        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginBottom: "4px" }}>
-                                            <span className="badge badge-blue" style={{ fontWeight: 700 }}>
+                                    <div className="flex-1 min-w-0 pr-0 sm:pr-4">
+                                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                                            <span className="badge badge-blue font-bold">
                                                 {product.brand}
                                             </span>
-                                            <span style={{ fontWeight: 700, fontSize: "14px", color: "var(--foreground)", fontFamily: "monospace" }}>
+                                            <span className="font-bold text-sm text-foreground font-mono">
                                                 {product.productCode}
                                             </span>
                                             <span className={`badge ${score >= 0.8 ? "badge-green" : score >= 0.6 ? "badge-yellow" : "badge-gray"}`}>
                                                 {Math.round(score * 100)}% Spec Match
                                             </span>
                                             {product.category && (
-                                                <span className="badge badge-gray" style={{ fontSize: "11px" }}>
+                                                <span className="badge badge-gray text-[11px]">
                                                     {product.category}
                                                 </span>
                                             )}
                                         </div>
 
-                                        <div style={{ fontSize: "13px", color: "var(--foreground)", fontWeight: 500, marginBottom: "6px" }}>
+                                        <div className="text-xs sm:text-sm text-foreground font-medium mb-1.5">
                                             {product.description || product.productName}
                                         </div>
 
                                         {/* Matched Feature Tags */}
-                                        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center" }}>
-                                            <span style={{ fontSize: "11px", color: "var(--muted)" }}>Matched:</span>
+                                        <div className="flex flex-wrap gap-1.5 items-center">
+                                            <span className="text-[11px] text-muted">Matched:</span>
                                             {matchDetails.matchedFeatures.map((f, i) => (
                                                 <span
                                                     key={i}
-                                                    style={{
-                                                        fontSize: "11px",
-                                                        background: "rgba(34,197,94,0.12)",
-                                                        color: "var(--success)",
-                                                        padding: "2px 6px",
-                                                        borderRadius: "4px",
-                                                        fontWeight: 500,
-                                                    }}
+                                                    className="text-[11px] bg-emerald-500/10 text-success border border-success/20 px-1.5 py-0.5 rounded-sm font-medium"
                                                 >
                                                     ✓ {f}
                                                 </span>
@@ -519,13 +506,7 @@ export default function BlindQuotationPage() {
                                             {matchDetails.missingFeatures.map((m, i) => (
                                                 <span
                                                     key={i}
-                                                    style={{
-                                                        fontSize: "11px",
-                                                        background: "rgba(239,68,68,0.08)",
-                                                        color: "var(--muted)",
-                                                        padding: "2px 6px",
-                                                        borderRadius: "4px",
-                                                    }}
+                                                    className="text-[11px] bg-red-500/10 text-muted px-1.5 py-0.5 rounded-sm"
                                                 >
                                                     {m}
                                                 </span>
@@ -534,22 +515,22 @@ export default function BlindQuotationPage() {
                                     </div>
 
                                     {/* Right: Pricing & Add Action */}
-                                    <div style={{ display: "flex", alignItems: "center", gap: "16px", flexShrink: 0 }}>
-                                        <div style={{ textAlign: "right" }}>
-                                            <div style={{ fontSize: "12px", color: "var(--muted)", textDecoration: "line-through" }}>
-                                                {formatCurrency(product.listPrice, product.currency || "AUD")}
+                                    <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
+                                        <div className="text-right">
+                                            <div className="text-xs text-muted line-through">
+                                                {formatCurrency(product.listPrice, product.currency || "PKR")}
                                             </div>
-                                            <div style={{ fontSize: "16px", fontWeight: 700, color: "var(--success)" }}>
-                                                {formatCurrency(product.netCost, product.currency || "AUD")}
+                                            <div className="text-base font-bold text-success">
+                                                {formatCurrency(product.netCost, product.currency || "PKR")}
                                             </div>
-                                            <div style={{ fontSize: "11px", color: "var(--muted)" }}>
+                                            <div className="text-[11px] text-muted">
                                                 Disc: {formatPercent(product.discount)}
                                             </div>
                                         </div>
 
                                         {/* Qty selector */}
-                                        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                                            <span style={{ fontSize: "11px", color: "var(--muted)" }}>Qty:</span>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-[11px] text-muted">Qty:</span>
                                             <input
                                                 type="number"
                                                 min="1"
@@ -558,22 +539,12 @@ export default function BlindQuotationPage() {
                                                     const val = Math.max(1, parseInt(e.target.value) || 1);
                                                     setQtyMap({ ...qtyMap, [product.id]: val });
                                                 }}
-                                                style={{
-                                                    width: "50px",
-                                                    background: "var(--input-bg)",
-                                                    border: "1px solid var(--input-border)",
-                                                    borderRadius: "6px",
-                                                    padding: "4px 6px",
-                                                    color: "var(--foreground)",
-                                                    fontSize: "12px",
-                                                    textAlign: "center",
-                                                }}
+                                                className="w-14 bg-input-bg border border-input-border rounded-md text-foreground px-2 py-1 text-xs text-center focus:border-accent outline-none"
                                             />
                                         </div>
 
                                         <button
-                                            className="btn-primary"
-                                            style={{ padding: "8px 14px", fontSize: "12px" }}
+                                            className="btn-primary btn-sm"
                                             onClick={() => handleAddProduct(result)}
                                         >
                                             + Add to Costing

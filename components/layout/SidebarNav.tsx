@@ -16,8 +16,8 @@ export function SidebarNav() {
     const pathname = usePathname();
 
     return (
-        <div style={{ padding: "12px 8px", flex: 1 }}>
-            <div style={{ fontSize: "10px", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", padding: "8px 8px 4px", marginBottom: "4px" }}>
+        <nav className="p-3 flex-1 space-y-1">
+            <div className="text-[10px] uppercase tracking-wider text-muted font-bold px-3 py-1 mb-1">
                 Navigation
             </div>
             {NAV_ITEMS.map((item) => {
@@ -26,27 +26,17 @@ export function SidebarNav() {
                     <Link
                         key={item.href}
                         href={item.href}
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "10px",
-                            padding: "9px 12px",
-                            borderRadius: "8px",
-                            marginBottom: "2px",
-                            fontSize: "13px",
-                            fontWeight: isActive ? 600 : 400,
-                            background: isActive ? "var(--accent-subtle)" : "transparent",
-                            color: isActive ? "var(--accent)" : "var(--foreground)",
-                            borderLeft: isActive ? "2px solid var(--accent)" : "2px solid transparent",
-                            transition: "all 0.15s",
-                            textDecoration: "none",
-                        }}
+                        className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-all ${
+                            isActive
+                                ? "bg-accent/10 text-accent font-semibold border-l-2 border-accent"
+                                : "text-foreground/80 hover:bg-muted-bg hover:text-foreground font-normal border-l-2 border-transparent"
+                        }`}
                     >
-                        <span style={{ fontSize: "14px" }}>{item.icon}</span>
-                        {item.label}
+                        <span className="text-sm shrink-0">{item.icon}</span>
+                        <span>{item.label}</span>
                     </Link>
                 );
             })}
-        </div>
+        </nav>
     );
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { BOQItem } from "@/lib/types";
+import { ProcessingProgressCard, TableSkeleton, useProcessingProgress } from "@/components/common/ProcessingProgress";
 
 interface RequirementUploaderProps {
     onItemsLoaded: (items: BOQItem[], fileName: string) => void;
@@ -16,6 +17,9 @@ export default function RequirementUploader({
 }: RequirementUploaderProps) {
     const [dragging, setDragging] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [currentFileName, setCurrentFileName] = useState<string>("");
+
+    const { progress, stageIndex } = useProcessingProgress(uploading, 10);
 
     const handleFile = async (file: File | null) => {
         if (!file) return;
@@ -31,8 +35,9 @@ export default function RequirementUploader({
             return;
         }
 
+        setCurrentFileName(file.name);
         setUploading(true);
-        showToast("⏳ Processing requirement document & extracting specs...");
+        showToast("⏳ Processing requirement document with OCR & AI Vision...");
 
         const formData = new FormData();
         formData.append("file", file);
@@ -61,83 +66,72 @@ export default function RequirementUploader({
             showToast("❌ Failed to process requirement file.");
         } finally {
             setUploading(false);
+            setCurrentFileName("");
         }
     };
 
     return (
-        <div style={{ position: "relative" }}>
-            <label
-                className={`drop-zone ${dragging ? "active" : ""}`}
-                onDragOver={(e) => {
-                    e.preventDefault();
-                    setDragging(true);
-                }}
-                onDragLeave={() => setDragging(false)}
-                onDrop={(e) => {
-                    e.preventDefault();
-                    setDragging(false);
-                    handleFile(e.dataTransfer.files[0] || null);
-                }}
-                style={{
-                    cursor: uploading ? "wait" : "pointer",
-                    padding: "16px 20px",
-                    border: "1.5px dashed var(--accent)",
-                    background: dragging ? "rgba(59, 130, 246, 0.12)" : "rgba(59, 130, 246, 0.04)",
-                    borderRadius: "12px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: "16px",
-                    transition: "all 0.2s ease",
-                }}
-            >
-                <input
-                    id="requirement-file-upload-input"
-                    type="file"
-                    accept=".xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg,.webp"
-                    style={{ display: "none" }}
-                    disabled={uploading}
-                    onChange={(e) => handleFile(e.target.files?.[0] || null)}
-                />
+        <div className="space-y-4">
+            {uploading ? (
+                <div className="space-y-3">
+                    <ProcessingProgressCard
+                        title="Analyzing Requirement & Running OCR"
+                        fileName={currentFileName}
+                        progress={progress}
+                        stageIndex={stageIndex}
+                    />
+                    <TableSkeleton rows={4} columns={6} />
+                </div>
+            ) : (
+                <label
+                    className={`drop-zone group relative flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border-2 border-dashed p-4 sm:p-5 transition-all cursor-pointer ${
+                        dragging
+                            ? "border-accent bg-accent/10 scale-[1.005]"
+                            : "border-border hover:border-accent/80 bg-muted-bg/40 hover:bg-muted-bg/80"
+                    }`}
+                    onDragOver={(e) => {
+                        e.preventDefault();
+                        setDragging(true);
+                    }}
+                    onDragLeave={() => setDragging(false)}
+                    onDrop={(e) => {
+                        e.preventDefault();
+                        setDragging(false);
+                        handleFile(e.dataTransfer.files[0] || null);
+                    }}
+                >
+                    <input
+                        id="requirement-file-upload-input"
+                        type="file"
+                        accept=".xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg,.webp"
+                        className="hidden"
+                        onChange={(e) => handleFile(e.target.files?.[0] || null)}
+                    />
 
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <div
-                        style={{
-                            width: "40px",
-                            height: "40px",
-                            borderRadius: "10px",
-                            background: "rgba(59, 130, 246, 0.15)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "20px",
-                            flexShrink: 0,
-                        }}
-                    >
-                        {uploading ? <div className="spinner" style={{ width: 20, height: 20 }} /> : "📥"}
-                    </div>
-                    <div>
-                        <div style={{ fontWeight: 700, fontSize: "14px", color: "var(--foreground)" }}>
-                            {uploading ? "Analyzing & Extracting Requirements…" : "Upload Requirement / BOQ File"}
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-xl text-accent group-hover:scale-105 transition-transform">
+                            📥
                         </div>
-                        <div style={{ fontSize: "12px", color: "var(--muted)", marginTop: "2px" }}>
-                            Drag & drop or click to upload · <strong>Excel, CSV, PDF, or Images</strong> (PNG, JPG, WEBP)
+                        <div>
+                            <div className="text-sm font-bold text-foreground">
+                                Upload Requirement / BOQ File
+                            </div>
+                            <div className="text-xs text-muted mt-0.5">
+                                Drag & drop or click to upload · <strong className="text-foreground">Excel, CSV, PDF, or Images</strong> (PNG, JPG, WEBP)
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div style={{ display: "flex", gap: "6px", alignItems: "center", flexShrink: 0 }}>
-                    <span className="badge badge-purple" style={{ fontSize: "11px" }}>Auto Spec Extraction</span>
-                    <button
-                        type="button"
-                        className="btn-primary btn-sm"
-                        disabled={uploading}
-                        style={{ pointerEvents: "none" }}
-                    >
-                        Browse File
-                    </button>
-                </div>
-            </label>
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        <span className="badge badge-blue text-[11px]">
+                            Auto Spec Extraction
+                        </span>
+                        <span className="btn-primary btn-sm pointer-events-none">
+                            Browse File
+                        </span>
+                    </div>
+                </label>
+            )}
         </div>
     );
 }

@@ -8,6 +8,7 @@ import { formatCurrency } from "@/lib/calculations";
 import { isValidBrandName } from "@/lib/utils";
 import type { BOQItem, BOQMatch, Product, SearchResult } from "@/lib/types";
 import RequirementPreviewSection from "@/components/costing/RequirementPreviewSection";
+import { ProcessingProgressCard, CardSkeleton, useProcessingProgress } from "@/components/common/ProcessingProgress";
 import { useRouter } from "next/navigation";
 
 export default function ImportBOQPage() {
@@ -18,6 +19,8 @@ export default function ImportBOQPage() {
     const [uploadedFileName, setUploadedFileName] = useState("");
     const [brandMode, setBrandMode] = useState<string>("strict");
     const [toast, setToast] = useState<string | null>(null);
+
+    const { progress, stageIndex } = useProcessingProgress(uploading, 12);
 
     const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3500); };
 
@@ -101,6 +104,7 @@ export default function ImportBOQPage() {
     };
 
     const handleFileUpload = async (file: File) => {
+        setUploadedFileName(file.name);
         setUploading(true);
         clearBoqMatches();
         const formData = new FormData();
@@ -289,11 +293,23 @@ export default function ImportBOQPage() {
                 />
             )}
 
-            {/* Upload */}
-            {boqMatches.length === 0 && (
-                <div className="card" style={{ marginBottom: "20px" }}>
-                    <BOQDropzone onFile={handleFileUpload} uploading={uploading} />
+            {/* Upload or Loading State */}
+            {uploading ? (
+                <div className="space-y-4 mb-6">
+                    <ProcessingProgressCard
+                        title="Processing BOQ & Extracting Specifications"
+                        fileName={uploadedFileName || "Uploaded Document"}
+                        progress={progress}
+                        stageIndex={stageIndex}
+                    />
+                    <CardSkeleton count={3} />
                 </div>
+            ) : (
+                boqMatches.length === 0 && (
+                    <div className="card mb-5">
+                        <BOQDropzone onFile={handleFileUpload} />
+                    </div>
+                )
             )}
 
             {/* Stats */}
@@ -446,26 +462,38 @@ export default function ImportBOQPage() {
     );
 }
 
-function BOQDropzone({ onFile, uploading }: { onFile: (f: File) => void; uploading: boolean }) {
+function BOQDropzone({ onFile }: { onFile: (f: File) => void }) {
     const [dragging, setDragging] = useState(false);
 
     return (
         <label
-            className={`drop-zone ${dragging ? "active" : ""}`}
-            style={{ padding: "48px 32px" }}
+            className={`drop-zone group relative flex flex-col items-center justify-center p-8 sm:p-12 text-center rounded-2xl border-2 border-dashed transition-all cursor-pointer ${
+                dragging
+                    ? "border-accent bg-accent/10 scale-[1.005]"
+                    : "border-border hover:border-accent/80 bg-muted-bg/30 hover:bg-muted-bg/60"
+            }`}
             onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
             onDragLeave={() => setDragging(false)}
             onDrop={(e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) onFile(f); }}
         >
-            <input type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
-            <div style={{ fontSize: "36px", marginBottom: "12px" }}>{uploading ? "⏳" : "📥"}</div>
-            <div style={{ fontSize: "16px", fontWeight: 600, marginBottom: "6px" }}>
-                {uploading ? "Processing BOQ…" : "Drop your BOQ file here"}
+            <input
+                type="file"
+                accept=".xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg,.webp"
+                className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }}
+            />
+            <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">📥</div>
+            <div className="text-base font-bold text-foreground mb-1">
+                Drop your BOQ / Requirement file here
             </div>
-            <div style={{ color: "var(--muted)", fontSize: "13px" }}>
-                XLSX · XLS · CSV supported · Any format with Description + Qty columns
+            <div className="text-xs text-muted max-w-md">
+                Excel (.xlsx, .xls), CSV, PDF (.pdf), or Images (PNG, JPG, WEBP) · Any format with Description + Qty
             </div>
-            {uploading && <div className="spinner" style={{ margin: "16px auto 0" }} />}
+            <div className="mt-4">
+                <span className="btn-primary btn-sm pointer-events-none">
+                    Browse File
+                </span>
+            </div>
         </label>
     );
 }

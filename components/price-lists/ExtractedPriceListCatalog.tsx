@@ -269,7 +269,7 @@ export default function ExtractedPriceListCatalog({
                 <table>
                     <thead>
                         <tr>
-                            <th style={{ width: "40px" }}>#</th>
+                            <th className="sticky left-0 z-20 bg-muted-bg text-center w-10 shadow-[1px_0_0_0_var(--border)]">#</th>
                             <th>Product Code</th>
                             <th>Brand</th>
                             <th>Category</th>
@@ -284,8 +284,8 @@ export default function ExtractedPriceListCatalog({
                     <tbody>
                         {filteredProducts.slice(0, 100).map((prod, idx) => {
                             return (
-                                <tr key={prod.id || `${prod.productCode}-${idx}`}>
-                                    <td style={{ color: "var(--muted)", fontSize: "12px" }}>
+                                <tr key={prod.id || `${prod.productCode}-${idx}`} className="hover:bg-muted-bg/50 transition-colors">
+                                    <td className="sticky left-0 z-10 bg-card-bg text-center text-xs font-semibold text-muted shadow-[1px_0_0_0_var(--border)]">
                                         {idx + 1}
                                     </td>
                                     <td style={{ fontWeight: 700, fontSize: "13px", whiteSpace: "nowrap" }}>

@@ -10,18 +10,18 @@ export default function DashboardPage() {
     const costingItemCount = costingSession?.items?.length ?? 0;
 
     return (
-        <div style={{ padding: "28px 32px" }}>
+        <div className="p-6 sm:p-8 space-y-6 max-w-7xl mx-auto">
             {/* Page Header */}
-            <div className="page-header">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/40">
                 <div>
-                    <h1 style={{ fontSize: "22px", fontWeight: 700, color: "var(--foreground)" }}>
-                        ⚡ Dashboard
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                        <span>⚡</span> Dashboard
                     </h1>
-                    <p style={{ color: "var(--muted)", fontSize: "13px", marginTop: "4px" }}>
-                        Electrical Master — AI Costing & Quotation Tool
+                    <p className="text-xs text-muted mt-1">
+                        Electrical Master — AI Costing, OCR & Quotation Tool
                     </p>
                 </div>
-                <div style={{ display: "flex", gap: "10px" }}>
+                <div className="flex items-center gap-2.5">
                     <Link href="/costing" className="btn-primary">
                         🧮 New Costing
                     </Link>
@@ -33,80 +33,120 @@ export default function DashboardPage() {
 
             {/* Session Warning */}
             {costingItemCount > 0 && (
-                <div style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", borderRadius: "10px", padding: "12px 16px", marginBottom: "20px", fontSize: "13px", color: "#f59e0b" }}>
-                    ⚠️ You have an active costing session with {costingItemCount} item{costingItemCount !== 1 ? "s" : ""}. Download your files before refreshing or starting a new costing.
+                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs sm:text-sm text-amber-600 dark:text-amber-400 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                        <span>⚠️</span>
+                        <span>
+                            You have an active costing session with <strong>{costingItemCount}</strong> item{costingItemCount !== 1 ? "s" : ""}. Download your files before starting a new costing.
+                        </span>
+                    </div>
+                    <Link href="/costing" className="shrink-0 text-xs font-semibold underline hover:no-underline">
+                        View Session →
+                    </Link>
                 </div>
             )}
 
-            {/* Stats */}
-            <div className="grid-4" style={{ marginBottom: "24px" }}>
-                <div className="stat-card">
-                    <div className="stat-value gradient-text">{products.length.toLocaleString()}</div>
-                    <div className="stat-label">Products Indexed</div>
-                    <div style={{ fontSize: "11px", color: "var(--muted)", marginTop: "4px" }}>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="rounded-xl border border-border bg-card-bg p-5 shadow-xs space-y-1">
+                    <div className="text-3xl font-extrabold tracking-tight gradient-text">
+                        {products.length.toLocaleString()}
+                    </div>
+                    <div className="text-xs font-medium text-muted">Products Indexed</div>
+                    <div className="text-[11px] text-muted/80">
                         {loadedBrands.length} brand{loadedBrands.length !== 1 ? "s" : ""} loaded
                     </div>
                 </div>
-                <div className="stat-card">
-                    <div className="stat-value gradient-text">{priceLists.length}</div>
-                    <div className="stat-label">Price Lists</div>
-                    <div style={{ fontSize: "11px", color: "var(--muted)", marginTop: "4px" }}>
-                        {priceLists.filter((pl) => pl.status === "ready").length} active
+
+                <div className="rounded-xl border border-border bg-card-bg p-5 shadow-xs space-y-1">
+                    <div className="text-3xl font-extrabold tracking-tight gradient-text">
+                        {priceLists.length}
+                    </div>
+                    <div className="text-xs font-medium text-muted">Price Lists</div>
+                    <div className="text-[11px] text-muted/80">
+                        {priceLists.filter((pl) => pl.status === "ready").length} active catalogs
                     </div>
                 </div>
-                <div className="stat-card">
-                    <div className="stat-value gradient-text">{costingItemCount}</div>
-                    <div className="stat-label">Costing Items</div>
-                    <div style={{ fontSize: "11px", color: "var(--muted)", marginTop: "4px" }}>
-                        {costingSession ? "Session active" : "No active session"}
+
+                <div className="rounded-xl border border-border bg-card-bg p-5 shadow-xs space-y-1">
+                    <div className="text-3xl font-extrabold tracking-tight gradient-text">
+                        {costingItemCount}
+                    </div>
+                    <div className="text-xs font-medium text-muted">Costing Items</div>
+                    <div className="text-[11px] text-muted/80">
+                        {costingSession ? "Active estimation in progress" : "No active session"}
                     </div>
                 </div>
-                <div className="stat-card">
-                    <div className="stat-value gradient-text">{boqMatches.length}</div>
-                    <div className="stat-label">BOQ Matches</div>
-                    <div style={{ fontSize: "11px", color: "var(--muted)", marginTop: "4px" }}>
-                        {boqMatches.filter((m) => m.status === "accepted").length} accepted
+
+                <div className="rounded-xl border border-border bg-card-bg p-5 shadow-xs space-y-1">
+                    <div className="text-3xl font-extrabold tracking-tight gradient-text">
+                        {boqMatches.length}
+                    </div>
+                    <div className="text-xs font-medium text-muted">BOQ Items Processed</div>
+                    <div className="text-[11px] text-muted/80">
+                        {boqMatches.filter((m) => m.status === "accepted").length} accepted matches
                     </div>
                 </div>
             </div>
 
-            <div className="grid-2" style={{ gap: "20px" }}>
-                {/* Loaded Brands */}
-                <div className="card">
-                    <h2 className="section-title" style={{ marginBottom: "16px", fontSize: "15px" }}>
-                        📡 Session Data
+            {/* Split Sections */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Session Data */}
+                <div className="rounded-xl border border-border bg-card-bg p-5 shadow-xs space-y-5">
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-muted flex items-center gap-2">
+                        📡 Catalogs & Brands
                     </h2>
-                    <div style={{ marginBottom: "12px" }}>
-                        <div className="label">Loaded Brands</div>
+
+                    <div className="space-y-2">
+                        <div className="text-xs font-medium text-muted">Loaded Brands</div>
                         {loadedBrands.length === 0 ? (
-                            <div style={{ color: "var(--muted)", fontSize: "13px" }}>
+                            <div className="text-xs text-muted">
                                 No price lists loaded.{" "}
-                                <Link href="/price-lists" style={{ color: "var(--accent)" }}>Upload one now →</Link>
+                                <Link href="/price-lists" className="text-accent hover:underline font-medium">
+                                    Upload one now →
+                                </Link>
                             </div>
                         ) : (
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px" }}>
+                            <div className="flex flex-wrap gap-2 pt-1">
                                 {loadedBrands.map((brand) => (
-                                    <span key={brand} className="badge badge-blue">⚡ {brand}</span>
+                                    <span key={brand} className="badge badge-blue">
+                                        ⚡ {brand}
+                                    </span>
                                 ))}
                             </div>
                         )}
                     </div>
-                    <hr className="divider" />
-                    <div>
-                        <div className="label">Price List Status</div>
+
+                    <hr className="border-border/60" />
+
+                    <div className="space-y-2">
+                        <div className="text-xs font-medium text-muted">Price List Status</div>
                         {priceLists.length === 0 ? (
-                            <div style={{ color: "var(--muted)", fontSize: "13px" }}>No price lists.</div>
+                            <div className="text-xs text-muted">No price lists uploaded.</div>
                         ) : (
-                            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" }}>
+                            <div className="space-y-2 pt-1">
                                 {priceLists.map((pl) => (
-                                    <div key={pl.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--muted-bg)", borderRadius: "8px", padding: "8px 12px" }}>
-                                        <div>
-                                            <span style={{ fontWeight: 600, fontSize: "13px" }}>{pl.brand}</span>
-                                            <span style={{ color: "var(--muted)", fontSize: "12px", marginLeft: "8px" }}>{pl.fileName}</span>
+                                    <div
+                                        key={pl.id}
+                                        className="flex items-center justify-between rounded-lg bg-muted-bg/60 border border-border/40 p-2.5 text-xs"
+                                    >
+                                        <div className="truncate pr-2">
+                                            <span className="font-semibold text-foreground">{pl.brand}</span>
+                                            <span className="text-muted ml-2">{pl.fileName}</span>
                                         </div>
-                                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                            <span style={{ fontSize: "12px", color: "var(--muted)" }}>{pl.productCount.toLocaleString()} products</span>
-                                            <span className={`badge ${pl.status === "ready" ? "badge-green" : pl.status === "error" ? "badge-red" : "badge-yellow"}`}>
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            <span className="text-muted">
+                                                {pl.productCount.toLocaleString()} items
+                                            </span>
+                                            <span
+                                                className={`badge ${
+                                                    pl.status === "ready"
+                                                        ? "badge-green"
+                                                        : pl.status === "error"
+                                                        ? "badge-red"
+                                                        : "badge-yellow"
+                                                }`}
+                                            >
                                                 {pl.status}
                                             </span>
                                         </div>
@@ -118,11 +158,12 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Quick Actions */}
-                <div className="card">
-                    <h2 className="section-title" style={{ marginBottom: "16px", fontSize: "15px" }}>
+                <div className="rounded-xl border border-border bg-card-bg p-5 shadow-xs space-y-4">
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-muted flex items-center gap-2">
                         🚀 Quick Actions
                     </h2>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+
+                    <div className="space-y-2.5">
                         <QuickAction
                             href="/blind-quotation"
                             icon="⚡"
@@ -157,27 +198,33 @@ export default function DashboardPage() {
 
                     {/* Current Costing Summary */}
                     {costingSession && costingItemCount > 0 && (
-                        <>
-                            <hr className="divider" />
-                            <div>
-                                <div className="label">Current Costing</div>
-                                <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
-                                    <div>
-                                        <div style={{ fontWeight: 600 }}>{costingSession.header.customerName || "Unnamed Customer"}</div>
-                                        <div style={{ color: "var(--muted)", fontSize: "12px" }}>{costingSession.header.project || "No project"}</div>
+                        <div className="pt-4 border-t border-border/60 space-y-3">
+                            <div className="text-xs font-semibold uppercase text-muted">Current Costing</div>
+                            <div className="flex items-center justify-between rounded-xl bg-muted-bg/60 p-3.5 border border-border/50">
+                                <div>
+                                    <div className="font-semibold text-sm text-foreground">
+                                        {costingSession.header.customerName || "Unnamed Customer"}
                                     </div>
-                                    <div style={{ textAlign: "right" }}>
-                                        <div style={{ fontWeight: 700, color: "var(--accent)", fontSize: "16px" }}>
-                                            {new Intl.NumberFormat("en-AU", { style: "currency", currency: costingSession.header.currency }).format(costingSession.totals.grandTotal)}
-                                        </div>
-                                        <div style={{ color: "var(--muted)", fontSize: "12px" }}>{costingItemCount} items incl. GST</div>
+                                    <div className="text-xs text-muted">
+                                        {costingSession.header.project || "No project name"}
                                     </div>
                                 </div>
-                                <Link href="/costing" className="btn-primary" style={{ width: "100%", marginTop: "12px", justifyContent: "center" }}>
-                                    Continue Costing →
-                                </Link>
+                                <div className="text-right">
+                                    <div className="font-bold text-accent text-base">
+                                        {new Intl.NumberFormat("en-AU", {
+                                            style: "currency",
+                                            currency: costingSession.header.currency || "PKR",
+                                        }).format(costingSession.totals.grandTotal)}
+                                    </div>
+                                    <div className="text-[11px] text-muted">
+                                        {costingItemCount} items incl. GST
+                                    </div>
+                                </div>
                             </div>
-                        </>
+                            <Link href="/costing" className="btn-primary w-full justify-center">
+                                Continue Costing →
+                            </Link>
+                        </div>
                     )}
                 </div>
             </div>
@@ -189,32 +236,18 @@ function QuickAction({ href, icon, title, desc }: { href: string; icon: string; 
     return (
         <Link
             href={href}
-            style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "14px",
-                padding: "12px 14px",
-                borderRadius: "10px",
-                border: "1px solid var(--border)",
-                background: "var(--muted-bg)",
-                transition: "border-color 0.15s, background 0.15s",
-                textDecoration: "none",
-            }}
-            onMouseOver={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--accent)";
-                (e.currentTarget as HTMLElement).style.background = "var(--accent-subtle)";
-            }}
-            onMouseOut={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-                (e.currentTarget as HTMLElement).style.background = "var(--muted-bg)";
-            }}
+            className="group flex items-center gap-3.5 p-3 rounded-xl border border-border/70 bg-muted-bg/50 hover:bg-accent/5 hover:border-accent/40 transition-all text-foreground"
         >
-            <span style={{ fontSize: "22px" }}>{icon}</span>
-            <div>
-                <div style={{ fontWeight: 600, fontSize: "13px" }}>{title}</div>
-                <div style={{ color: "var(--muted)", fontSize: "12px", marginTop: "2px" }}>{desc}</div>
+            <span className="text-xl group-hover:scale-110 transition-transform">{icon}</span>
+            <div className="flex-1 min-w-0">
+                <div className="font-semibold text-xs text-foreground group-hover:text-accent transition-colors">
+                    {title}
+                </div>
+                <div className="text-[11px] text-muted truncate mt-0.5">{desc}</div>
             </div>
-            <span style={{ marginLeft: "auto", color: "var(--muted)" }}>→</span>
+            <span className="text-muted group-hover:text-accent group-hover:translate-x-0.5 transition-all text-xs">
+                →
+            </span>
         </Link>
     );
 }

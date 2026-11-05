@@ -5,6 +5,7 @@ import { useEmsStore, DEFAULT_BRANDS } from "@/stores/appStore";
 import { nanoid, formatDate, formatFileSize } from "@/lib/utils";
 import type { PriceListMeta, ColumnMapping, ImportPreview } from "@/lib/types";
 import ExtractedPriceListCatalog from "@/components/price-lists/ExtractedPriceListCatalog";
+import { ProcessingProgressCard, TableSkeleton, useProcessingProgress } from "@/components/common/ProcessingProgress";
 
 export default function PriceListsPage() {
     const {
@@ -29,6 +30,13 @@ export default function PriceListsPage() {
     const [mappings, setMappings] = useState<ColumnMapping[]>([]);
     const [aiMapping, setAiMapping] = useState(false);
     const [toast, setToast] = useState<string | null>(null);
+
+    const [processingFile, setProcessingFile] = useState<{ isProcessing: boolean; fileName: string; brand: string }>({
+        isProcessing: false,
+        fileName: "",
+        brand: "",
+    });
+    const { progress, stageIndex } = useProcessingProgress(processingFile.isProcessing, 12);
 
     // Active list of brands (persisted in Zustand store)
     const activeBrands = Array.from(
@@ -79,6 +87,7 @@ export default function PriceListsPage() {
             uploadDate: formatDate(), status: "processing", productCount: 0,
         };
         addPriceList(meta);
+        setProcessingFile({ isProcessing: true, fileName: file.name, brand });
 
         const formData = new FormData();
         formData.append("file", file);
@@ -111,6 +120,8 @@ export default function PriceListsPage() {
         } catch {
             updatePriceList(id, { status: "error", errorMessage: "Network error" });
             showToast("❌ Failed to upload file");
+        } finally {
+            setProcessingFile({ isProcessing: false, fileName: "", brand: "" });
         }
     };
 
@@ -184,8 +195,21 @@ export default function PriceListsPage() {
                 </div>
             </div>
 
+            {/* Active AI / OCR Processing Progress */}
+            {processingFile.isProcessing && (
+                <div className="space-y-4 mb-7">
+                    <ProcessingProgressCard
+                        title={`Scanning & Parsing Price List (${processingFile.brand})`}
+                        fileName={processingFile.fileName}
+                        progress={progress}
+                        stageIndex={stageIndex}
+                    />
+                    <TableSkeleton rows={4} columns={7} />
+                </div>
+            )}
+
             {/* Upload Cards */}
-            <div className="grid-3" style={{ marginBottom: "28px" }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-7">
                 {activeBrands.map((brand) => {
                     const loaded = priceLists.filter((pl) => pl.brand.toLowerCase() === brand.toLowerCase());
                     return (
@@ -208,11 +232,11 @@ export default function PriceListsPage() {
 
             {/* Import Preview */}
             {preview && (
-                <div className="card" style={{ marginBottom: "20px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "12px" }}>
+                <div className="card mb-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                         <div>
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginBottom: "4px" }}>
-                                <h2 className="section-title" style={{ fontSize: "16px", margin: 0 }}>📊 Import Preview</h2>
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                                <h2 className="section-title text-base m-0">📊 Import Preview</h2>
                                 {preview.fileType === "pdf" && <span className="badge badge-purple">📄 PDF Document</span>}
                                 {preview.fileType === "image" && <span className="badge badge-blue">🖼️ Image Document</span>}
                                 {preview.fileType === "spreadsheet" && <span className="badge badge-green">📊 Spreadsheet</span>}
@@ -220,13 +244,13 @@ export default function PriceListsPage() {
                                     <span className="badge badge-gray">⚡ {(preview as { extractionMethod?: string }).extractionMethod}</span>
                                 )}
                             </div>
-                            <p style={{ color: "var(--muted)", fontSize: "12px", marginTop: "2px" }}>
+                            <p className="text-xs text-muted">
                                 {preview.totalRows} product rows detected from <strong>{preview.fileName}</strong> · {preview.selectedSheet} · Review and confirm column mappings
                             </p>
                         </div>
-                        <div style={{ display: "flex", gap: "8px" }}>
+                        <div className="flex items-center gap-2">
                             <button onClick={handleAiMap} className="btn-secondary btn-sm" disabled={aiMapping}>
-                                {aiMapping ? <><span className="spinner" style={{ width: 14, height: 14 }} />Mapping…</> : "🤖 AI Map Columns"}
+                                {aiMapping ? <><span className="spinner" style={{ width: 14, height: 14 }} />AI Mapping…</> : "🤖 AI Map Columns"}
                             </button>
                             <button onClick={() => setPreview(null)} className="btn-ghost btn-sm">Cancel</button>
                             <button onClick={handleConfirm} className="btn-primary btn-sm" disabled={importing}>
@@ -237,8 +261,8 @@ export default function PriceListsPage() {
 
                     {/* Sheet Selector */}
                     {preview.sheets.length > 1 && (
-                        <div style={{ marginBottom: "14px", display: "flex", gap: "8px", alignItems: "center" }}>
-                            <span className="label" style={{ marginBottom: 0 }}>Sheet:</span>
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="label mb-0">Sheet:</span>
                             {preview.sheets.map((s) => (
                                 <button
                                     key={s}
@@ -255,19 +279,37 @@ export default function PriceListsPage() {
                     <ColumnMapper mappings={mappings} onChange={setMappings} />
 
                     {/* Data Preview */}
-                    <div style={{ marginTop: "16px" }}>
-                        <div className="label" style={{ marginBottom: "8px" }}>Data Preview (first {preview.previewRows.length} rows)</div>
+                    <div className="mt-4">
+                        <div className="label mb-2">Data Preview (first {preview.previewRows.length} rows)</div>
                         <div className="table-container">
                             <table>
                                 <thead>
                                     <tr>
-                                        {preview.headers.map((h) => <th key={h}>{h}</th>)}
+                                        {preview.headers.map((h, idx) => (
+                                            <th
+                                                key={h}
+                                                className={idx === 0 ? "sticky left-0 z-20 bg-muted-bg shadow-[1px_0_0_0_var(--border)]" : ""}
+                                            >
+                                                {h}
+                                            </th>
+                                        ))}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {preview.previewRows.slice(0, 8).map((row, i) => (
-                                        <tr key={i}>
-                                            {preview.headers.map((h) => <td key={h} style={{ maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{row[h]}</td>)}
+                                        <tr key={i} className="hover:bg-muted-bg/50 transition-colors">
+                                            {preview.headers.map((h, idx) => (
+                                                <td
+                                                    key={h}
+                                                    className={`${
+                                                        idx === 0
+                                                            ? "sticky left-0 z-10 bg-card-bg shadow-[1px_0_0_0_var(--border)] font-semibold text-foreground"
+                                                            : "text-foreground/90"
+                                                    } max-w-[200px] truncate`}
+                                                >
+                                                    {row[h]}
+                                                </td>
+                                            ))}
                                         </tr>
                                     ))}
                                 </tbody>
@@ -491,23 +533,26 @@ function FileDropzone({ onFile, label }: { onFile: (file: File) => void; label?:
 
     return (
         <label
-            className={`drop-zone ${dragging ? "active" : ""}`}
+            className={`drop-zone group flex flex-col items-center justify-center p-5 rounded-xl border-2 border-dashed transition-all cursor-pointer ${
+                dragging
+                    ? "border-accent bg-accent/10"
+                    : "border-border hover:border-accent/80 bg-muted-bg/40 hover:bg-muted-bg/70"
+            }`}
             onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
             onDragLeave={() => setDragging(false)}
             onDrop={(e) => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); }}
-            style={{ cursor: "pointer" }}
         >
             <input
                 type="file"
                 accept=".xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg,.webp"
-                style={{ display: "none" }}
+                className="hidden"
                 onChange={(e) => handleFile(e.target.files?.[0] || null)}
             />
-            <div style={{ fontSize: "22px", marginBottom: "6px" }}>📁</div>
-            <div style={{ fontSize: "12px", color: "var(--muted)", fontWeight: 500 }}>
+            <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">📁</div>
+            <div className="text-xs font-semibold text-foreground">
                 {label || "Drop price list or click to upload"}
             </div>
-            <div style={{ fontSize: "11px", color: "var(--muted)", marginTop: "4px" }}>
+            <div className="text-[11px] text-muted mt-1">
                 Excel · CSV · PDF · Images (PNG, JPG, WEBP)
             </div>
         </label>
