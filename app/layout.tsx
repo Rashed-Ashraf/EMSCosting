@@ -30,9 +30,9 @@ export default function RootLayout({
 
 function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+    <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />
-      <main style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column", borderTop: "3px solid var(--accent)" }}>
+      <main className="flex-1 overflow-auto flex flex-col bg-background">
         {children}
       </main>
     </div>
@@ -40,36 +40,22 @@ function AppShell({ children }: { children: React.ReactNode }) {
 }
 
 function Sidebar() {
-  // We import NavLink client component from a separate file
-  // But since layout.tsx can be server component, we keep sidebar as server HTML
-  // and use client links for active state
   return (
-    <nav
-      style={{
-        width: "220px",
-        minWidth: "220px",
-        background: "var(--sidebar-bg)",
-        borderRight: "1px solid var(--sidebar-border)",
-        borderTop: "3px solid var(--danger)", /* Explicit red element */
-        display: "flex",
-        flexDirection: "column",
-        padding: "0",
-        height: "100vh",
-        overflowY: "auto",
-      }}
-    >
-      {/* Logo */}
-      <div
-        style={{
-          padding: "20px 16px 18px",
-          borderBottom: "1px solid var(--sidebar-border)",
-        }}
-      >
-        <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--danger)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "2px" }}>
-          ⚡ ELECTRICAL MASTER
-        </div>
-        <div style={{ fontSize: "12px", color: "var(--muted)" }}>
-          AI Costing Tool
+    <aside className="w-64 min-w-[256px] bg-sidebar-bg border-r border-sidebar-border flex flex-col h-screen overflow-y-auto select-none">
+      {/* Brand Header */}
+      <div className="p-5 border-b border-sidebar-border">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 text-white shadow-sm font-bold text-base">
+            ⚡
+          </div>
+          <div className="min-w-0">
+            <div className="text-xs font-extrabold tracking-wider uppercase text-foreground truncate">
+              ELECTRICAL MASTER
+            </div>
+            <div className="text-[11px] text-muted font-medium truncate">
+              AI Costing & Estimation
+            </div>
+          </div>
         </div>
       </div>
 
@@ -77,12 +63,16 @@ function Sidebar() {
       <SidebarNav />
 
       {/* Footer */}
-      <div style={{ marginTop: "auto", padding: "16px", borderTop: "1px solid var(--sidebar-border)" }}>
-        <div style={{ fontSize: "10px", color: "var(--muted)", textAlign: "center" }}>
-          MVP v1.0 · Session Only
+      <div className="mt-auto p-4 border-t border-sidebar-border">
+        <div className="flex items-center justify-between text-[11px] text-muted">
+          <span className="flex items-center gap-1.5 font-medium">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            Storage: IndexedDB
+          </span>
+          <span className="font-semibold text-foreground/50">v1.2</span>
         </div>
       </div>
-    </nav>
+    </aside>
   );
 }
 

@@ -22,23 +22,22 @@
 }
 
 :root {
-  --background: #fdfdfd;
-  --foreground: #1e293b;
+  --background: #f8fafc;
+  --foreground: #0f172a;
   --sidebar-bg: #ffffff;
   --sidebar-border: #e2e8f0;
   --card-bg: #ffffff;
   --card-border: #e2e8f0;
-  --accent: #1d4ed8;
-  /* Strong Blue */
-  --accent-hover: #1e3a8a;
-  --accent-subtle: rgba(29, 78, 216, 0.08);
+  --accent: #2563eb;
+  /* Royal Blue */
+  --accent-hover: #1d4ed8;
+  --accent-subtle: rgba(37, 99, 235, 0.08);
   /* Light Blue Tint */
   --success: #16a34a;
-  --warning: #ea580c;
+  --warning: #d97706;
   --danger: #dc2626;
-  /* Red */
   --muted: #64748b;
-  --muted-bg: #f8fafc;
+  --muted-bg: #f1f5f9;
   --input-bg: #ffffff;
   --input-border: #cbd5e1;
   --border: #e2e8f0;
@@ -99,23 +98,25 @@ a {
 }
 
 .btn-primary {
-  background: var(--accent);
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
   color: white;
   border: none;
   border-radius: 8px;
   padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   white-space: nowrap;
+  box-shadow: 0 1px 2px 0 rgba(29, 78, 216, 0.25);
 }
 
 .btn-primary:hover {
-  background: var(--accent-hover);
+  background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+  box-shadow: 0 3px 6px 0 rgba(29, 78, 216, 0.35);
   transform: translateY(-1px);
 }
 
@@ -130,24 +131,26 @@ a {
 }
 
 .btn-secondary {
-  background: var(--muted-bg);
-  color: var(--foreground);
-  border: 1px solid var(--border);
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 8px 16px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   white-space: nowrap;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
 }
 
 .btn-secondary:hover {
-  background: var(--card-border);
-  border-color: var(--accent);
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
 .btn-ghost {
@@ -217,8 +220,9 @@ a {
 .card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
 }
 
 .input {
@@ -412,11 +416,18 @@ tbody td {
 .stat-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
 }
 
 .stat-value {

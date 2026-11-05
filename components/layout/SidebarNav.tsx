@@ -2,14 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+    LayoutDashboard,
+    Zap,
+    FileSpreadsheet,
+    Calculator,
+    FileUp,
+    FileText,
+} from "lucide-react";
 
 const NAV_ITEMS = [
-    { href: "/dashboard", label: "Dashboard", icon: "▦" },
-    { href: "/blind-quotation", label: "Blind Quotation", icon: "⚡" },
-    { href: "/price-lists", label: "Price Lists", icon: "📋" },
-    { href: "/costing", label: "New Costing", icon: "🧮" },
-    { href: "/import-boq", label: "Import BOQ", icon: "📥" },
-    { href: "/templates", label: "Templates", icon: "📄" },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/blind-quotation", label: "Blind Quotation", icon: Zap },
+    { href: "/price-lists", label: "Price Lists", icon: FileSpreadsheet },
+    { href: "/costing", label: "New Costing", icon: Calculator },
+    { href: "/import-boq", label: "Import BOQ", icon: FileUp },
+    { href: "/templates", label: "Templates", icon: FileText },
 ];
 
 export function SidebarNav() {
@@ -21,18 +29,19 @@ export function SidebarNav() {
                 Navigation
             </div>
             {NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
                 const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
                 return (
                     <Link
                         key={item.href}
                         href={item.href}
-                        className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-all ${
+                        className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs transition-all ${
                             isActive
-                                ? "bg-accent/10 text-accent font-semibold border-l-2 border-accent"
-                                : "text-foreground/80 hover:bg-muted-bg hover:text-foreground font-normal border-l-2 border-transparent"
+                                ? "bg-accent/10 text-accent font-semibold shadow-xs"
+                                : "text-foreground/80 hover:bg-muted-bg hover:text-foreground font-medium"
                         }`}
                     >
-                        <span className="text-sm shrink-0">{item.icon}</span>
+                        <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-accent" : "text-muted"}`} />
                         <span>{item.label}</span>
                     </Link>
                 );
