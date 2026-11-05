@@ -420,7 +420,7 @@ tbody td {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
   transition: all 0.2s ease;
 }
@@ -431,15 +431,17 @@ tbody td {
 }
 
 .stat-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--foreground);
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--accent);
   line-height: 1;
+  letter-spacing: -0.02em;
 }
 
 .stat-label {
   font-size: 13px;
-  color: var(--muted);
+  font-weight: 600;
+  color: #334155;
 }
 
 .animate-pulse-dot::after {

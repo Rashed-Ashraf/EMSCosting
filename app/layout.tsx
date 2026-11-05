@@ -32,7 +32,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />
-      <main className="flex-1 overflow-auto flex flex-col bg-background">
+      <main className="flex-1 overflow-auto flex flex-col bg-background border-t-[3px] border-[#1d4ed8]">
         {children}
       </main>
     </div>
@@ -41,21 +41,15 @@ function AppShell({ children }: { children: React.ReactNode }) {
 
 function Sidebar() {
   return (
-    <aside className="w-64 min-w-[256px] bg-sidebar-bg border-r border-sidebar-border flex flex-col h-screen overflow-y-auto select-none">
+    <aside className="w-[230px] min-w-[230px] bg-sidebar-bg border-r border-sidebar-border border-t-[3px] border-t-[#dc2626] flex flex-col h-screen overflow-y-auto select-none">
       {/* Brand Header */}
-      <div className="p-5 border-b border-sidebar-border">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 text-white shadow-sm font-bold text-base">
-            ⚡
-          </div>
-          <div className="min-w-0">
-            <div className="text-xs font-extrabold tracking-wider uppercase text-foreground truncate">
-              ELECTRICAL MASTER
-            </div>
-            <div className="text-[11px] text-muted font-medium truncate">
-              AI Costing & Estimation
-            </div>
-          </div>
+      <div className="px-5 py-4 border-b border-sidebar-border">
+        <div className="flex items-center gap-1.5 text-[#dc2626] font-extrabold text-[12px] tracking-[0.14em] uppercase">
+          <span>⚡</span>
+          <span>ELECTRICAL MASTER</span>
+        </div>
+        <div className="text-[11px] text-muted font-medium mt-0.5">
+          AI Costing Tool
         </div>
       </div>
 
@@ -63,13 +57,18 @@ function Sidebar() {
       <SidebarNav />
 
       {/* Footer */}
-      <div className="mt-auto p-4 border-t border-sidebar-border">
+      <div className="mt-auto px-4 py-3 border-t border-sidebar-border">
         <div className="flex items-center justify-between text-[11px] text-muted">
-          <span className="flex items-center gap-1.5 font-medium">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            Storage: IndexedDB
+          <div className="flex items-center gap-1.5 font-medium">
+            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 text-[9px] font-bold text-white">
+              N
+            </span>
+            <span>MVP v1.0</span>
+          </div>
+          <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-semibold">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            IndexedDB
           </span>
-          <span className="font-semibold text-foreground/50">v1.2</span>
         </div>
       </div>
     </aside>
