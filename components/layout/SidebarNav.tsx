@@ -26,10 +26,10 @@ export function SidebarNav() {
                     <Link
                         key={item.href}
                         href={item.href}
-                        className={`flex items-center gap-2.5 px-3 py-2 text-xs rounded-r-lg border-l-[3px] transition-all duration-150 ${
+                        className={`flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg transition-all duration-150 ${
                             isActive
-                                ? "bg-accent/10 text-accent font-semibold border-accent shadow-2xs"
-                                : "text-foreground/80 hover:bg-muted-bg hover:text-foreground border-transparent font-medium"
+                                ? "bg-blue-50 text-blue-700 font-semibold shadow-2xs"
+                                : "text-slate-700 hover:bg-slate-100 hover:text-slate-900 font-medium"
                         }`}
                     >
                         <span className="text-sm shrink-0">{item.icon}</span>

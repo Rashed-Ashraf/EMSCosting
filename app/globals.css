@@ -48,27 +48,26 @@
   --highlight: #eff6ff;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #090d16;
-    --foreground: #f8fafc;
-    --sidebar-bg: #0b1120;
-    --sidebar-border: #1e293b;
-    --card-bg: #0f172a;
-    --card-border: #1e293b;
-    --accent: #3b82f6;
-    --accent-hover: #2563eb;
-    --accent-subtle: rgba(59, 130, 246, 0.15);
-    --success: #22c55e;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --muted: #94a3b8;
-    --muted-bg: #1e293b;
-    --input-bg: #0f172a;
-    --input-border: #334155;
-    --border: #1e293b;
-    --highlight: #1e293b;
-  }
+/* Dark theme is opt-in via .dark class, preserving default crisp light theme */
+.dark {
+  --background: #090d16;
+  --foreground: #f8fafc;
+  --sidebar-bg: #0b1120;
+  --sidebar-border: #1e293b;
+  --card-bg: #0f172a;
+  --card-border: #1e293b;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-subtle: rgba(59, 130, 246, 0.15);
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --muted: #94a3b8;
+  --muted-bg: #1e293b;
+  --input-bg: #0f172a;
+  --input-border: #334155;
+  --border: #1e293b;
+  --highlight: #1e293b;
 }
 
 * {

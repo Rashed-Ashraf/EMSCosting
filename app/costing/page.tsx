@@ -957,5 +957,4 @@ function QuotationStep({ onBack }: { onBack: () => void }) {
             </div>
         </div>
     );
-    );
 }

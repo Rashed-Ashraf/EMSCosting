@@ -41,7 +41,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
 
 function Sidebar() {
   return (
-    <aside className="w-56 min-w-56 bg-sidebar-bg border-r border-sidebar-border border-t-2 border-t-red-600 flex flex-col h-screen overflow-y-auto select-none">
+    <aside className="w-[230px] min-w-[230px] bg-sidebar-bg border-r border-sidebar-border border-t-2 border-t-red-600 flex flex-col h-screen overflow-y-auto select-none">
       {/* Brand Header */}
       <div className="px-5 py-4 border-b border-sidebar-border">
         <div className="flex items-center gap-1.5 text-red-600 font-extrabold text-xs tracking-wider uppercase">

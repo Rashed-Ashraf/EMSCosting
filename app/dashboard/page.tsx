@@ -39,7 +39,7 @@ export default function DashboardPage() {
 
             {/* Active Session Warning Banner */}
             {costingItemCount > 0 && (
-                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm text-amber-900 dark:text-amber-300 shadow-2xs">
+                <div className="rounded-xl border border-amber-300 bg-amber-50/90 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm text-amber-900 shadow-2xs">
                     <div className="flex items-center gap-2">
                         <span className="text-base shrink-0">⚠️</span>
                         <span>
@@ -48,43 +48,51 @@ export default function DashboardPage() {
                     </div>
                     <Link
                         href="/costing"
-                        className="font-bold text-amber-700 dark:text-amber-400 hover:underline shrink-0 text-xs sm:text-sm"
+                        className="font-bold text-amber-700 hover:text-amber-900 hover:underline shrink-0 text-xs sm:text-sm"
                     >
                         View Session →
                     </Link>
                 </div>
             )}
 
-            {/* 4 Stat Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="stat-card">
-                    <div className="stat-value">{products.length.toLocaleString()}</div>
-                    <div className="stat-label">Products Indexed</div>
-                    <div className="text-[11px] text-muted mt-1">
+            {/* Unified 4-Metric Stats Bar */}
+            <div className="card p-0 overflow-hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border shadow-xs">
+                <div className="p-5 flex flex-col gap-1">
+                    <div className="text-3xl font-extrabold text-blue-600 tracking-tight">
+                        {products.length.toLocaleString()}
+                    </div>
+                    <div className="text-xs font-semibold text-slate-700">Products Indexed</div>
+                    <div className="text-[11px] text-muted">
                         {loadedBrands.length} brand{loadedBrands.length !== 1 ? "s" : ""} loaded
                     </div>
                 </div>
 
-                <div className="stat-card">
-                    <div className="stat-value">{priceLists.length}</div>
-                    <div className="stat-label">Price Lists</div>
-                    <div className="text-[11px] text-muted mt-1">
+                <div className="p-5 flex flex-col gap-1">
+                    <div className="text-3xl font-extrabold text-blue-600 tracking-tight">
+                        {priceLists.length}
+                    </div>
+                    <div className="text-xs font-semibold text-slate-700">Price Lists</div>
+                    <div className="text-[11px] text-muted">
                         {readyPriceLists} active catalog{readyPriceLists !== 1 ? "s" : ""}
                     </div>
                 </div>
 
-                <div className="stat-card">
-                    <div className="stat-value">{costingItemCount}</div>
-                    <div className="stat-label">Costing Items</div>
-                    <div className="text-[11px] text-muted mt-1">
+                <div className="p-5 flex flex-col gap-1">
+                    <div className="text-3xl font-extrabold text-blue-600 tracking-tight">
+                        {costingItemCount}
+                    </div>
+                    <div className="text-xs font-semibold text-slate-700">Costing Items</div>
+                    <div className="text-[11px] text-muted">
                         {costingSession ? "Active estimation in progress" : "No active session"}
                     </div>
                 </div>
 
-                <div className="stat-card">
-                    <div className="stat-value">{boqMatches.length}</div>
-                    <div className="stat-label">BOQ Items Processed</div>
-                    <div className="text-[11px] text-muted mt-1">
+                <div className="p-5 flex flex-col gap-1">
+                    <div className="text-3xl font-extrabold text-blue-600 tracking-tight">
+                        {boqMatches.length}
+                    </div>
+                    <div className="text-xs font-semibold text-slate-700">BOQ Items Processed</div>
+                    <div className="text-[11px] text-muted">
                         {acceptedBoqMatches} accepted match{acceptedBoqMatches !== 1 ? "es" : ""}
                     </div>
                 </div>
@@ -94,7 +102,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                 {/* Column 1: Catalogs & Brands */}
                 <div className="card space-y-4">
-                    <h2 className="text-xs font-bold uppercase tracking-wider text-foreground/90 flex items-center gap-2">
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
                         <span>📦</span>
                         <span>CATALOGS & BRANDS</span>
                     </h2>
@@ -116,7 +124,7 @@ export default function DashboardPage() {
                                 {loadedBrands.map((brand) => (
                                     <span
                                         key={brand}
-                                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-50 text-amber-900 border border-amber-200/90 text-xs font-bold shadow-2xs"
+                                        className="badge badge-blue font-bold px-3 py-1 text-xs"
                                     >
                                         <span>⚡</span>
                                         <span>{brand}</span>
@@ -175,12 +183,12 @@ export default function DashboardPage() {
 
                 {/* Column 2: Quick Actions & Current Costing */}
                 <div className="card space-y-4">
-                    <h2 className="text-xs font-bold uppercase tracking-wider text-foreground/90 flex items-center gap-2">
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
                         <span>🚀</span>
                         <span>QUICK ACTIONS</span>
                     </h2>
 
-                    <div className="space-y-2">
+                    <div className="divide-y divide-border/60">
                         <QuickActionRow
                             href="/blind-quotation"
                             icon="⚡"
@@ -229,7 +237,7 @@ export default function DashboardPage() {
                                     </div>
                                 </div>
                                 <div className="text-right shrink-0">
-                                    <div className="font-extrabold text-accent text-lg">
+                                    <div className="font-extrabold text-blue-600 text-lg">
                                         {currency} {new Intl.NumberFormat().format(costingSession.totals.grandTotal)}
                                     </div>
                                     <div className="text-[11px] text-muted">
@@ -239,7 +247,7 @@ export default function DashboardPage() {
                             </div>
                             <Link
                                 href="/costing"
-                                className="btn-primary w-full justify-center text-xs sm:text-sm py-2.5 mt-3"
+                                className="btn-primary w-full justify-center text-xs sm:text-sm py-2.5 mt-3 shadow-sm"
                             >
                                 Continue Costing →
                             </Link>
@@ -265,18 +273,20 @@ function QuickActionRow({
     return (
         <Link
             href={href}
-            className="group flex items-center gap-3.5 p-3 rounded-xl border border-border/70 bg-muted-bg/50 hover:bg-accent-subtle hover:border-accent/40 transition-all text-foreground"
+            className="group flex items-center justify-between py-2.5 px-2 rounded-lg hover:bg-slate-50 transition-colors text-foreground"
         >
-            <span className="text-xl shrink-0 group-hover:scale-110 transition-transform">
-                {icon}
-            </span>
-            <div className="flex-1 min-w-0">
-                <div className="font-semibold text-xs text-foreground group-hover:text-accent transition-colors">
-                    {title}
+            <div className="flex items-center gap-3 min-w-0">
+                <span className="text-xl shrink-0">
+                    {icon}
+                </span>
+                <div className="min-w-0">
+                    <div className="font-semibold text-xs text-foreground group-hover:text-blue-600 transition-colors">
+                        {title}
+                    </div>
+                    <div className="text-[11px] text-muted truncate mt-0.5">{desc}</div>
                 </div>
-                <div className="text-[11px] text-muted truncate mt-0.5">{desc}</div>
             </div>
-            <span className="text-muted/60 group-hover:text-accent group-hover:translate-x-1 transition-all text-xs font-bold shrink-0">
+            <span className="text-muted/60 group-hover:text-blue-600 group-hover:translate-x-1 transition-all text-xs font-bold shrink-0 ml-2">
                 →
             </span>
         </Link>
