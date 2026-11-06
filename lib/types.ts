@@ -223,7 +223,7 @@ export interface UploadedTemplate {
 export interface SearchResult {
     product: Product;
     score: number; // 0-1, 1 = perfect match
-    matchType: "exact" | "partial" | "fuzzy" | "ai";
+    matchType: "exact" | "partial" | "fuzzy" | "spec" | "ai";
 }
 
 // ─── App State (used by Zustand store) ────────────────────────────────────────

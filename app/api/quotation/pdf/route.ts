@@ -14,8 +14,11 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "No quotation provided" }, { status: 400 });
         }
 
-        const curr = quotation.currency || "AUD";
-        const fmt = (n: number) => new Intl.NumberFormat("en-AU", { style: "currency", currency: curr }).format(n);
+        const curr = quotation.currency || "PKR";
+        const fmt = (n: number) =>
+            curr === "PKR"
+                ? `PKR ${new Intl.NumberFormat("en-PK").format(n)}`
+                : new Intl.NumberFormat("en-US", { style: "currency", currency: curr }).format(n);
 
         // Build HTML quotation template for browser printing
         // In a complete production setup, we'd use @react-pdf/renderer or puppeteer here.

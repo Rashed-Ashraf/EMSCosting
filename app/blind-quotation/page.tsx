@@ -16,7 +16,7 @@ import { formatCurrency, formatPercent } from "@/lib/calculations";
 import Link from "next/link";
 
 export default function BlindQuotationPage() {
-    const { products, priceLists, addItemToCosting, costingSession } = useEmsStore();
+    const { products, addItemToCosting, costingSession } = useEmsStore();
 
     // Input mode: "smart" (NLP text parse) or "guided" (spec selectors)
     const [mode, setMode] = useState<"smart" | "guided">("smart");
@@ -124,74 +124,96 @@ export default function BlindQuotationPage() {
     };
 
     return (
-        <div style={{ padding: "28px 32px", maxWidth: "100%" }}>
+        <div className="p-6 sm:p-8 max-w-7xl mx-auto space-y-6">
             {toast && (
-                <div className="toast" style={{ borderLeft: `3px solid var(--success)` }}>
+                <div className="toast border-l-4 border-emerald-500 shadow-md">
                     {toast}
                 </div>
             )}
 
             {/* Header */}
-            <div className="page-header">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
                 <div>
-                    <h1 className="section-title" style={{ fontSize: "22px" }}>
-                        ⚡ Blind Quotation & Spec Finder
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                        <span className="text-amber-500">⚡</span> Blind Quotation & Spec Finder
                     </h1>
-                    <p style={{ color: "var(--muted)", fontSize: "13px", marginTop: "4px" }}>
-                        Find catalog model codes, specs, and live pricing when the client gives only the <strong>Brand</strong> and <strong>Electrical Readings (Amps, Poles, kA, kW)</strong> without a model number.
+                    <p className="text-xs sm:text-sm text-muted mt-1">
+                        Find catalog model codes, specs, and live pricing when the client gives only the <strong className="text-foreground">Brand</strong> and <strong className="text-foreground">Electrical Readings (Amps, Poles, kA, kW)</strong> without a model number.
                     </p>
                 </div>
-                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <div className="flex items-center gap-2.5 shrink-0">
                     {costingSession && costingSession.items.length > 0 && (
-                        <Link href="/costing" className="btn-secondary">
-                            🧮 View Costing ({costingSession.items.length} items)
+                        <Link
+                            href="/costing"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card-bg text-xs font-semibold text-foreground hover:bg-muted-bg transition-colors shadow-xs"
+                        >
+                            <span>🧮</span>
+                            <span>View Costing ({costingSession.items.length} items)</span>
                         </Link>
                     )}
-                    <button className="btn-ghost btn-sm" onClick={handleClearAll}>
-                        🔄 Reset Filters
+                    <button
+                        type="button"
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted hover:text-foreground hover:bg-muted-bg transition-colors"
+                        onClick={handleClearAll}
+                    >
+                        <span>🔄</span>
+                        <span>Reset Filters</span>
                     </button>
                 </div>
             </div>
 
             {/* Warning if no products loaded */}
             {products.length === 0 && (
-                <div style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", borderRadius: "10px", padding: "14px 18px", marginBottom: "20px", fontSize: "13px", color: "var(--warning)" }}>
-                    ⚠️ No price lists or products indexed yet. <Link href="/price-lists" style={{ color: "var(--accent)", fontWeight: 600 }}>Upload a price list (Schneider, ABB, Siemens, etc.) first →</Link>
+                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs sm:text-sm text-amber-600 dark:text-amber-400">
+                    ⚠️ No price lists or products indexed yet.{" "}
+                    <Link href="/price-lists" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                        Upload a price list (Schneider, ABB, Siemens, etc.) first →
+                    </Link>
                 </div>
             )}
 
             {/* Mode Switcher Tabs */}
-            <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+            <div className="flex flex-wrap items-center gap-2">
                 <button
+                    type="button"
                     onClick={() => setMode("smart")}
-                    className={mode === "smart" ? "btn-primary" : "btn-secondary"}
-                    style={{ padding: "8px 18px", fontSize: "13px" }}
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+                        mode === "smart"
+                            ? "bg-blue-600 text-white shadow-sm ring-2 ring-blue-600/20"
+                            : "bg-card-bg text-muted hover:text-foreground border border-border hover:bg-muted-bg"
+                    }`}
                 >
-                    🧠 Smart Natural Spec Search (Paste RFQ)
+                    <span>🧠</span>
+                    <span>Smart Natural Spec Search (Paste RFQ)</span>
                 </button>
                 <button
+                    type="button"
                     onClick={() => setMode("guided")}
-                    className={mode === "guided" ? "btn-primary" : "btn-secondary"}
-                    style={{ padding: "8px 18px", fontSize: "13px" }}
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+                        mode === "guided"
+                            ? "bg-blue-600 text-white shadow-sm ring-2 ring-blue-600/20"
+                            : "bg-card-bg text-muted hover:text-foreground border border-border hover:bg-muted-bg"
+                    }`}
                 >
-                    🎛️ Guided Spec Builder (Brand + Readings)
+                    <span>🎛️</span>
+                    <span>Guided Spec Builder (Brand + Readings)</span>
                 </button>
             </div>
 
             {/* Smart NLP Search Mode */}
             {mode === "smart" && (
-                <div className="card" style={{ marginBottom: "20px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                        <div style={{ fontWeight: 600, fontSize: "13px", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                <div className="card space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <label htmlFor="smart-spec-input" className="text-xs font-semibold text-muted uppercase tracking-wider">
                             Enter Blind Client Specification
-                        </div>
-                        <div style={{ display: "flex", gap: "6px" }}>
-                            <span style={{ fontSize: "11px", color: "var(--muted)" }}>Quick examples:</span>
+                        </label>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-[11px] text-muted">Quick examples:</span>
                             {["Schneider 250A 3P 36kA MCCB", "ABB 100A 4P 25kA breaker", "Siemens contactor 15kW 230V", "Hager 32A 3P MCB Type C"].map((ex) => (
                                 <button
                                     key={ex}
-                                    className="badge badge-blue"
-                                    style={{ cursor: "pointer", border: "none", background: "var(--muted-bg)" }}
+                                    type="button"
+                                    className="px-2 py-0.5 rounded text-[11px] bg-muted-bg hover:bg-blue-600/10 text-muted hover:text-blue-600 transition-colors"
                                     onClick={() => setSmartQuery(ex)}
                                 >
                                     {ex}
@@ -200,19 +222,22 @@ export default function BlindQuotationPage() {
                         </div>
                     </div>
 
-                    <div style={{ position: "relative", marginBottom: "14px" }}>
+                    <div className="relative">
                         <input
-                            className="input"
-                            style={{ paddingLeft: "38px", fontSize: "16px", height: "48px" }}
+                            id="smart-spec-input"
+                            type="text"
+                            className="w-full bg-input-bg border border-input-border rounded-xl pl-11 pr-10 py-3 text-sm sm:text-base text-foreground placeholder:text-muted focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-all"
                             value={smartQuery}
                             onChange={(e) => setSmartQuery(e.target.value)}
                             placeholder="Type or paste inquiry: e.g. 'Schneider 250A 36kA 3P MCCB', 'ABB 4P 63A MCB', '15kW 415V contactor Siemens'..."
                         />
-                        <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", fontSize: "18px" }}>⚡</span>
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-amber-500">⚡</span>
                         {smartQuery && (
                             <button
+                                type="button"
                                 onClick={() => setSmartQuery("")}
-                                style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "transparent", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: "14px" }}
+                                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-foreground text-sm p-1 rounded-full hover:bg-muted-bg"
+                                aria-label="Clear search query"
                             >
                                 ✕
                             </button>
@@ -221,58 +246,60 @@ export default function BlindQuotationPage() {
 
                     {/* Live Extracted Parameters Breakdown */}
                     {smartQuery && (
-                        <div style={{ background: "var(--muted-bg)", borderRadius: "10px", padding: "12px 16px", border: "1px solid var(--border)" }}>
-                            <div style={{ fontSize: "11px", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>
+                        <div className="bg-muted-bg/60 rounded-xl p-4 border border-border space-y-3">
+                            <div className="text-[11px] font-semibold text-muted uppercase tracking-wider">
                                 🔍 AI Electrical Parameter Extraction:
                             </div>
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
+                            <div className="flex flex-wrap gap-2 items-center">
                                 {parsedSpec.brand && (
-                                    <span className="badge badge-blue" style={{ fontSize: "12px", padding: "4px 10px" }}>
-                                        🏢 Brand: <strong>{parsedSpec.brand}</strong>
+                                    <span className="badge badge-blue text-xs py-1 px-2.5">
+                                        🏢 Brand: <strong className="ml-1">{parsedSpec.brand}</strong>
                                     </span>
                                 )}
                                 {parsedSpec.componentType && (
-                                    <span className="badge badge-green" style={{ fontSize: "12px", padding: "4px 10px" }}>
-                                        📦 Type: <strong>{parsedSpec.componentType}</strong>
+                                    <span className="badge badge-green text-xs py-1 px-2.5">
+                                        📦 Type: <strong className="ml-1">{parsedSpec.componentType}</strong>
                                     </span>
                                 )}
                                 {parsedSpec.currentRating && (
-                                    <span className="badge badge-yellow" style={{ fontSize: "12px", padding: "4px 10px" }}>
-                                        ⚡ Current: <strong>{parsedSpec.currentRating}</strong>
+                                    <span className="badge badge-yellow text-xs py-1 px-2.5">
+                                        ⚡ Current: <strong className="ml-1">{parsedSpec.currentRating}</strong>
                                     </span>
                                 )}
                                 {parsedSpec.poles && (
-                                    <span className="badge badge-blue" style={{ fontSize: "12px", padding: "4px 10px" }}>
-                                        🔢 Poles: <strong>{parsedSpec.poles}</strong>
+                                    <span className="badge badge-blue text-xs py-1 px-2.5">
+                                        🔢 Poles: <strong className="ml-1">{parsedSpec.poles}</strong>
                                     </span>
                                 )}
                                 {parsedSpec.breakingCapacity && (
-                                    <span className="badge badge-red" style={{ fontSize: "12px", padding: "4px 10px" }}>
-                                        💥 Breaking: <strong>{parsedSpec.breakingCapacity}</strong>
+                                    <span className="badge badge-red text-xs py-1 px-2.5">
+                                        💥 Breaking: <strong className="ml-1">{parsedSpec.breakingCapacity}</strong>
                                     </span>
                                 )}
                                 {parsedSpec.powerRating && (
-                                    <span className="badge badge-green" style={{ fontSize: "12px", padding: "4px 10px" }}>
-                                        ⚙️ Power: <strong>{parsedSpec.powerRating}</strong>
+                                    <span className="badge badge-green text-xs py-1 px-2.5">
+                                        ⚙️ Power: <strong className="ml-1">{parsedSpec.powerRating}</strong>
                                     </span>
                                 )}
                                 {parsedSpec.voltage && (
-                                    <span className="badge badge-gray" style={{ fontSize: "12px", padding: "4px 10px" }}>
-                                        🔌 Voltage: <strong>{parsedSpec.voltage}</strong>
+                                    <span className="badge badge-gray text-xs py-1 px-2.5">
+                                        🔌 Voltage: <strong className="ml-1">{parsedSpec.voltage}</strong>
                                     </span>
                                 )}
                                 {parsedSpec.curve && (
-                                    <span className="badge badge-gray" style={{ fontSize: "12px", padding: "4px 10px" }}>
-                                        📈 Trip/Curve: <strong>{parsedSpec.curve}</strong>
+                                    <span className="badge badge-gray text-xs py-1 px-2.5">
+                                        📈 Trip/Curve: <strong className="ml-1">{parsedSpec.curve}</strong>
                                     </span>
                                 )}
 
                                 {/* Optional Brand Filter override */}
-                                <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "6px" }}>
-                                    <span style={{ fontSize: "11px", color: "var(--muted)" }}>Filter Brand:</span>
+                                <div className="ml-auto flex items-center gap-2">
+                                    <label htmlFor="smart-brand-override" className="text-xs text-muted font-medium">
+                                        Filter Brand:
+                                    </label>
                                     <select
-                                        className="select"
-                                        style={{ fontSize: "12px", padding: "3px 8px", width: "auto" }}
+                                        id="smart-brand-override"
+                                        className="select text-xs py-1 px-2.5 w-auto"
                                         value={selectedBrand}
                                         onChange={(e) => setSelectedBrand(e.target.value)}
                                     >
@@ -290,17 +317,18 @@ export default function BlindQuotationPage() {
 
             {/* Guided Spec Builder Mode */}
             {mode === "guided" && (
-                <div className="card" style={{ marginBottom: "20px" }}>
-                    <div style={{ fontWeight: 600, fontSize: "13px", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "14px" }}>
+                <div className="card space-y-5">
+                    <div className="text-xs font-semibold text-muted uppercase tracking-wider">
                         Configure Electrical Specifications
                     </div>
 
-                    <div className="grid-3" style={{ gap: "16px", marginBottom: "16px" }}>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {/* Brand */}
-                        <div className="form-group">
-                            <label className="label">1. Brand Name</label>
+                        <div className="space-y-1.5">
+                            <label htmlFor="guided-brand-select" className="label mb-0">1. Brand Name</label>
                             <select
-                                className="select"
+                                id="guided-brand-select"
+                                className="select text-sm"
                                 value={selectedBrand}
                                 onChange={(e) => setSelectedBrand(e.target.value)}
                             >
@@ -312,10 +340,11 @@ export default function BlindQuotationPage() {
                         </div>
 
                         {/* Component Type */}
-                        <div className="form-group">
-                            <label className="label">2. Component Category</label>
+                        <div className="space-y-1.5">
+                            <label htmlFor="guided-category-select" className="label mb-0">2. Component Category</label>
                             <select
-                                className="select"
+                                id="guided-category-select"
+                                className="select text-sm"
                                 value={selectedType}
                                 onChange={(e) => setSelectedType(e.target.value)}
                             >
@@ -327,15 +356,18 @@ export default function BlindQuotationPage() {
                         </div>
 
                         {/* Poles */}
-                        <div className="form-group">
-                            <label className="label">3. Number of Poles</label>
-                            <div style={{ display: "flex", gap: "6px" }}>
+                        <div className="space-y-1.5">
+                            <span className="label mb-0">3. Number of Poles</span>
+                            <div className="flex gap-2">
                                 {["1P", "2P", "3P", "4P"].map((p) => (
                                     <button
                                         key={p}
                                         type="button"
-                                        className={selectedPoles === p ? "btn-primary" : "btn-secondary"}
-                                        style={{ flex: 1, padding: "6px 0", fontSize: "12px", justifyContent: "center" }}
+                                        className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-colors border ${
+                                            selectedPoles === p
+                                                ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                                                : "bg-card-bg text-foreground border-border hover:bg-muted-bg"
+                                        }`}
                                         onClick={() => setSelectedPoles(selectedPoles === p ? "" : p)}
                                     >
                                         {p}
@@ -346,47 +378,58 @@ export default function BlindQuotationPage() {
                     </div>
 
                     {/* Current Rating Chips & Input */}
-                    <div style={{ marginBottom: "16px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                            <label className="label" style={{ marginBottom: 0 }}>4. Current / Amperage Rating (Amps)</label>
-                            <span style={{ fontSize: "11px", color: "var(--muted)" }}>Selected: <strong>{selectedCurrent || "None"}</strong></span>
+                    <div className="space-y-2 pt-2 border-t border-border">
+                        <div className="flex items-center justify-between">
+                            <span className="label mb-0">4. Current / Amperage Rating (Amps)</span>
+                            <span className="text-xs text-muted">
+                                Selected: <strong className="text-foreground">{selectedCurrent || "None"}</strong>
+                            </span>
                         </div>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "8px" }}>
+                        <div className="flex flex-wrap gap-1.5">
                             {STANDARD_CURRENT_RATINGS.map((amp) => (
                                 <button
                                     key={amp}
                                     type="button"
-                                    className={selectedCurrent === amp ? "btn-primary btn-sm" : "btn-secondary btn-sm"}
-                                    style={{ fontSize: "11px", padding: "3px 8px" }}
+                                    className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors border ${
+                                        selectedCurrent === amp
+                                            ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                                            : "bg-card-bg text-muted hover:text-foreground border-border hover:bg-muted-bg"
+                                    }`}
                                     onClick={() => setSelectedCurrent(selectedCurrent === amp ? "" : amp)}
                                 >
                                     {amp}
                                 </button>
                             ))}
                         </div>
-                        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                        <div className="flex items-center gap-2 pt-1">
                             <input
-                                className="input"
-                                style={{ maxWidth: "200px", fontSize: "13px" }}
+                                id="guided-custom-current"
+                                type="text"
+                                className="input max-w-xs text-xs"
                                 placeholder="Or type custom Amps e.g. 175"
                                 value={selectedCurrent.replace(/[^0-9.]/g, "")}
                                 onChange={(e) => setSelectedCurrent(e.target.value ? `${e.target.value}A` : "")}
                             />
-                            <span style={{ fontSize: "12px", color: "var(--muted)" }}>Ampere (A)</span>
+                            <label htmlFor="guided-custom-current" className="text-xs text-muted">
+                                Ampere (A)
+                            </label>
                         </div>
                     </div>
 
                     {/* Breaking Capacity (kA) & Voltage */}
-                    <div className="grid-2" style={{ gap: "16px" }}>
-                        <div>
-                            <label className="label">5. Breaking Capacity (Short Circuit kA)</label>
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border">
+                        <div className="space-y-2">
+                            <span className="label mb-0">5. Breaking Capacity (Short Circuit kA)</span>
+                            <div className="flex flex-wrap gap-1.5">
                                 {STANDARD_KA_RATINGS.map((ka) => (
                                     <button
                                         key={ka}
                                         type="button"
-                                        className={selectedKa === ka ? "btn-primary btn-sm" : "btn-secondary btn-sm"}
-                                        style={{ fontSize: "11px", padding: "3px 8px" }}
+                                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors border ${
+                                            selectedKa === ka
+                                                ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                                                : "bg-card-bg text-muted hover:text-foreground border-border hover:bg-muted-bg"
+                                        }`}
                                         onClick={() => setSelectedKa(selectedKa === ka ? "" : ka)}
                                     >
                                         {ka}
@@ -395,15 +438,18 @@ export default function BlindQuotationPage() {
                             </div>
                         </div>
 
-                        <div>
-                            <label className="label">6. Voltage / Coil</label>
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                        <div className="space-y-2">
+                            <span className="label mb-0">6. Voltage / Coil</span>
+                            <div className="flex flex-wrap gap-1.5">
                                 {["240V", "415V", "230VAC", "24VDC", "110VAC", "400V"].map((v) => (
                                     <button
                                         key={v}
                                         type="button"
-                                        className={selectedVoltage === v ? "btn-primary btn-sm" : "btn-secondary btn-sm"}
-                                        style={{ fontSize: "11px", padding: "3px 8px" }}
+                                        className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors border ${
+                                            selectedVoltage === v
+                                                ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                                                : "bg-card-bg text-muted hover:text-foreground border-border hover:bg-muted-bg"
+                                        }`}
                                         onClick={() => setSelectedVoltage(selectedVoltage === v ? "" : v)}
                                     >
                                         {v}
@@ -416,18 +462,18 @@ export default function BlindQuotationPage() {
             )}
 
             {/* Results Section */}
-            <div className="card">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <div className="card space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-border">
                     <div>
-                        <h2 className="section-title" style={{ fontSize: "16px" }}>
+                        <h2 className="text-base font-bold text-foreground">
                             Matching Catalog Options ({results.length})
                         </h2>
-                        <p style={{ color: "var(--muted)", fontSize: "12px", marginTop: "2px" }}>
+                        <p className="text-xs text-muted mt-0.5">
                             Ranked by electrical spec compatibility & net cost
                         </p>
                     </div>
                     {results.length > 0 && (
-                        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                        <div className="flex items-center gap-2">
                             <span className="badge badge-green">
                                 {results.filter((r) => r.score >= 0.8).length} Exact / High Spec Matches
                             </span>
@@ -436,27 +482,29 @@ export default function BlindQuotationPage() {
                 </div>
 
                 {results.length === 0 ? (
-                    <div style={{ textAlign: "center", padding: "48px 24px", color: "var(--muted)" }}>
-                        <div style={{ fontSize: "36px", marginBottom: "12px" }}>⚡</div>
-                        <div style={{ fontWeight: 600, fontSize: "15px", marginBottom: "6px", color: "var(--foreground)" }}>
+                    <div className="text-center py-12 px-4 space-y-3">
+                        <div className="text-4xl">⚡</div>
+                        <div className="font-semibold text-sm text-foreground">
                             {products.length === 0
                                 ? "No product price lists loaded"
                                 : (mode === "smart" && !smartQuery) || (mode === "guided" && !selectedBrand && !selectedType && !selectedCurrent)
                                 ? "Enter brand & electrical readings above to find matching models"
                                 : "No catalog models match all the specified electrical readings"}
                         </div>
-                        <div style={{ fontSize: "13px" }}>
+                        <div className="text-xs text-muted">
                             {products.length === 0 ? (
-                                <Link href="/price-lists" style={{ color: "var(--accent)" }}>Upload your price lists in Price Lists page →</Link>
+                                <Link href="/price-lists" className="text-blue-600 dark:text-blue-400 font-medium hover:underline">
+                                    Upload your price lists in Price Lists page →
+                                </Link>
                             ) : (
                                 "Try broadening your criteria (e.g. search with Amps + Brand only, or check alternatives)."
                             )}
                         </div>
                     </div>
                 ) : (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    <div className="space-y-3">
                         {results.map((result) => {
-                            const { product, score, matchDetails, matchedSpecsSummary } = result;
+                            const { product, score, matchDetails } = result;
                             const qty = qtyMap[product.id] || 1;
                             const isHighMatch = score >= 0.8;
 
@@ -465,13 +513,13 @@ export default function BlindQuotationPage() {
                                     key={product.id}
                                     className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border transition-all ${
                                         isHighMatch
-                                            ? "bg-card-bg border-accent/40 shadow-xs ring-1 ring-accent/10"
+                                            ? "bg-card-bg border-blue-500/40 shadow-xs ring-1 ring-blue-500/10"
                                             : "bg-muted-bg/50 border-border"
                                     }`}
                                 >
                                     {/* Left: Product info & match badges */}
-                                    <div className="flex-1 min-w-0 pr-0 sm:pr-4">
-                                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                                    <div className="flex-1 min-w-0 pr-0 sm:pr-4 space-y-1.5">
+                                        <div className="flex items-center gap-2 flex-wrap">
                                             <span className="badge badge-blue font-bold">
                                                 {product.brand}
                                             </span>
@@ -488,7 +536,7 @@ export default function BlindQuotationPage() {
                                             )}
                                         </div>
 
-                                        <div className="text-xs sm:text-sm text-foreground font-medium mb-1.5">
+                                        <div className="text-xs sm:text-sm text-foreground font-medium">
                                             {product.description || product.productName}
                                         </div>
 
@@ -498,7 +546,7 @@ export default function BlindQuotationPage() {
                                             {matchDetails.matchedFeatures.map((f, i) => (
                                                 <span
                                                     key={i}
-                                                    className="text-[11px] bg-emerald-500/10 text-success border border-success/20 px-1.5 py-0.5 rounded-sm font-medium"
+                                                    className="text-[11px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-sm font-medium"
                                                 >
                                                     ✓ {f}
                                                 </span>
@@ -520,7 +568,7 @@ export default function BlindQuotationPage() {
                                             <div className="text-xs text-muted line-through">
                                                 {formatCurrency(product.listPrice, product.currency || "PKR")}
                                             </div>
-                                            <div className="text-base font-bold text-success">
+                                            <div className="text-base font-bold text-emerald-600 dark:text-emerald-400">
                                                 {formatCurrency(product.netCost, product.currency || "PKR")}
                                             </div>
                                             <div className="text-[11px] text-muted">
@@ -530,8 +578,9 @@ export default function BlindQuotationPage() {
 
                                         {/* Qty selector */}
                                         <div className="flex items-center gap-1.5">
-                                            <span className="text-[11px] text-muted">Qty:</span>
+                                            <label htmlFor={`qty-${product.id}`} className="text-[11px] text-muted">Qty:</label>
                                             <input
+                                                id={`qty-${product.id}`}
                                                 type="number"
                                                 min="1"
                                                 value={qty}
@@ -539,11 +588,12 @@ export default function BlindQuotationPage() {
                                                     const val = Math.max(1, parseInt(e.target.value) || 1);
                                                     setQtyMap({ ...qtyMap, [product.id]: val });
                                                 }}
-                                                className="w-14 bg-input-bg border border-input-border rounded-md text-foreground px-2 py-1 text-xs text-center focus:border-accent outline-none"
+                                                className="w-14 bg-input-bg border border-input-border rounded-md text-foreground px-2 py-1 text-xs text-center focus:border-blue-600 outline-none"
                                             />
                                         </div>
 
                                         <button
+                                            type="button"
                                             className="btn-primary btn-sm"
                                             onClick={() => handleAddProduct(result)}
                                         >

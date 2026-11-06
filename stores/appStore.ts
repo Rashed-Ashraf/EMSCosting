@@ -27,6 +27,8 @@ import {
     calcTotals,
     createCostingItem,
     formatPercent,
+    DEFAULT_CURRENCY,
+    DEFAULT_GST_RATE,
 } from "@/lib/calculations";
 import { nanoid, formatDate, generateQuotationNumber } from "@/lib/utils";
 import seedCatalog from "@/lib/data/seedCatalog.json";
@@ -49,8 +51,8 @@ const defaultHeader: CostingHeader = {
     project: "",
     reference: "",
     date: formatDate(),
-    currency: "PKR",
-    gstRate: 0.18,
+    currency: DEFAULT_CURRENCY,
+    gstRate: DEFAULT_GST_RATE,
     notes: "",
 };
 
@@ -356,7 +358,7 @@ export const useEmsStore = create<EmsStore>()(
                     unit: i.product.unit,
                 }));
                 const subtotal = items.reduce((s, i) => s + i.totalPrice, 0);
-                const gstRate = session?.header.gstRate ?? 0.1;
+                const gstRate = session?.header.gstRate ?? DEFAULT_GST_RATE;
                 const gstAmount = Math.round(subtotal * gstRate * 100) / 100;
                 const grandTotal = Math.round((subtotal + gstAmount) * 100) / 100;
                 const now = new Date().toISOString();
@@ -384,7 +386,7 @@ export const useEmsStore = create<EmsStore>()(
                     gstRate,
                     gstAmount,
                     grandTotal,
-                    currency: session?.header.currency ?? "AUD",
+                    currency: session?.header.currency ?? DEFAULT_CURRENCY,
                     createdAt: now,
                 };
                 set({ quotation });
@@ -418,8 +420,16 @@ export const useEmsStore = create<EmsStore>()(
             storage: createJSONStorage(() => indexedDbStorage),
             partialize: (s) => ({
                 brands: s.brands || DEFAULT_BRANDS,
-                priceLists: s.priceLists,
-                products: s.products,
+                priceLists: s.priceLists.map((pl) => ({
+                    id: pl.id,
+                    brand: pl.brand,
+                    fileName: pl.fileName,
+                    currency: pl.currency,
+                    uploadDate: pl.uploadDate,
+                    status: pl.status,
+                    productCount: pl.productCount,
+                    errorMessage: pl.errorMessage,
+                })),
                 costingSession: s.costingSession,
                 quotation: s.quotation,
                 costingTemplate: s.costingTemplate
@@ -431,7 +441,7 @@ export const useEmsStore = create<EmsStore>()(
                 boqMatches: s.boqMatches,
             }),
             onRehydrateStorage: () => (state) => {
-                if (state && (state.products === undefined || state.products === null)) {
+                if (state && (!state.products || state.products.length === 0)) {
                     state.products = seedCatalog as Product[];
                 }
             },

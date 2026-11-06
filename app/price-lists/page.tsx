@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useEmsStore, DEFAULT_BRANDS } from "@/stores/appStore";
-import { nanoid, formatDate, formatFileSize } from "@/lib/utils";
+import { nanoid, formatDate } from "@/lib/utils";
 import type { PriceListMeta, ColumnMapping, ImportPreview } from "@/lib/types";
 import ExtractedPriceListCatalog from "@/components/price-lists/ExtractedPriceListCatalog";
 import { ProcessingProgressCard, TableSkeleton, useProcessingProgress } from "@/components/common/ProcessingProgress";
@@ -151,26 +151,34 @@ export default function PriceListsPage() {
     const handleConfirm = async () => {
         if (!preview) return;
         setImporting(true);
+
         try {
             const res = await fetch("/api/price-lists/confirm", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    rows: preview.previewRows,
-                    mappings,
-                    brand: preview.brand,
                     priceListId: preview.priceListId,
-                    currency: preview.currency || "PKR",
+                    brand: preview.brand,
+                    currency: "PKR",
+                    selectedSheet: preview.selectedSheet,
+                    mappings,
                 }),
             });
             const data = await res.json();
-            if (!res.ok) { showToast(`❌ ${data.error}`); return; }
+            if (!res.ok) {
+                showToast(`❌ ${data.error}`);
+                return;
+            }
 
             addProducts(data.products);
-            updatePriceList(preview.priceListId, { productCount: data.processedCount, status: "ready" });
-            setImportResult({ count: data.processedCount, skipped: data.skippedCount });
+            updatePriceList(preview.priceListId, {
+                status: "ready",
+                productCount: data.importedCount,
+            });
+
+            setImportResult({ count: data.importedCount, skipped: data.skippedCount });
             setPreview(null);
-            showToast(`✅ ${data.processedCount} products imported`);
+            showToast(`✅ ${data.importedCount} products indexed for ${preview.brand}`);
         } catch {
             showToast("❌ Import failed");
         } finally {
@@ -179,17 +187,19 @@ export default function PriceListsPage() {
     };
 
     return (
-        <div style={{ padding: "28px 32px" }}>
+        <div className="p-6 sm:p-8 max-w-7xl mx-auto space-y-6">
             {toast && (
-                <div className="toast" style={{ borderLeft: `3px solid ${toast.startsWith("✅") ? "var(--success)" : toast.startsWith("⚠") ? "var(--warning)" : "var(--danger)"}` }}>
+                <div className="toast border-l-4 border-emerald-500 shadow-md">
                     {toast}
                 </div>
             )}
 
-            <div className="page-header">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
                 <div>
-                    <h1 className="section-title" style={{ fontSize: "22px" }}>📋 Price Lists</h1>
-                    <p style={{ color: "var(--muted)", fontSize: "13px", marginTop: "4px" }}>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                        <span>📋</span> Price Lists
+                    </h1>
+                    <p className="text-xs sm:text-sm text-muted mt-1">
                         Upload brand price lists in Excel (.xlsx, .xls), CSV, PDF (.pdf), or Image (.png, .jpg, .webp) formats to build the product index
                     </p>
                 </div>
@@ -197,7 +207,7 @@ export default function PriceListsPage() {
 
             {/* Active AI / OCR Processing Progress */}
             {processingFile.isProcessing && (
-                <div className="space-y-4 mb-7">
+                <div className="space-y-4">
                     <ProcessingProgressCard
                         title={`Scanning & Parsing Price List (${processingFile.brand})`}
                         fileName={processingFile.fileName}
@@ -209,7 +219,7 @@ export default function PriceListsPage() {
             )}
 
             {/* Upload Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-7">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {activeBrands.map((brand) => {
                     const loaded = priceLists.filter((pl) => pl.brand.toLowerCase() === brand.toLowerCase());
                     return (
@@ -232,11 +242,11 @@ export default function PriceListsPage() {
 
             {/* Import Preview */}
             {preview && (
-                <div className="card mb-6">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                <div className="card space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
                         <div>
                             <div className="flex items-center gap-2 flex-wrap mb-1">
-                                <h2 className="section-title text-base m-0">📊 Import Preview</h2>
+                                <h2 className="text-base font-bold text-foreground">📊 Import Preview</h2>
                                 {preview.fileType === "pdf" && <span className="badge badge-purple">📄 PDF Document</span>}
                                 {preview.fileType === "image" && <span className="badge badge-blue">🖼️ Image Document</span>}
                                 {preview.fileType === "spreadsheet" && <span className="badge badge-green">📊 Spreadsheet</span>}
@@ -245,15 +255,31 @@ export default function PriceListsPage() {
                                 )}
                             </div>
                             <p className="text-xs text-muted">
-                                {preview.totalRows} product rows detected from <strong>{preview.fileName}</strong> · {preview.selectedSheet} · Review and confirm column mappings
+                                {preview.totalRows} product rows detected from <strong className="text-foreground">{preview.fileName}</strong> · {preview.selectedSheet} · Review and confirm column mappings
                             </p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <button onClick={handleAiMap} className="btn-secondary btn-sm" disabled={aiMapping}>
-                                {aiMapping ? <><span className="spinner" style={{ width: 14, height: 14 }} />AI Mapping…</> : "🤖 AI Map Columns"}
+                            <button
+                                type="button"
+                                onClick={handleAiMap}
+                                className="btn-secondary btn-sm"
+                                disabled={aiMapping}
+                            >
+                                {aiMapping ? "🤖 Mapping…" : "🤖 AI Map Columns"}
                             </button>
-                            <button onClick={() => setPreview(null)} className="btn-ghost btn-sm">Cancel</button>
-                            <button onClick={handleConfirm} className="btn-primary btn-sm" disabled={importing}>
+                            <button
+                                type="button"
+                                onClick={() => setPreview(null)}
+                                className="btn-ghost btn-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleConfirm}
+                                className="btn-primary btn-sm"
+                                disabled={importing}
+                            >
                                 {importing ? "Importing…" : `✅ Confirm Import (${preview.totalRows} products)`}
                             </button>
                         </div>
@@ -261,11 +287,12 @@ export default function PriceListsPage() {
 
                     {/* Sheet Selector */}
                     {preview.sheets.length > 1 && (
-                        <div className="flex items-center gap-2 mb-3">
+                        <div className="flex items-center gap-2">
                             <span className="label mb-0">Sheet:</span>
                             {preview.sheets.map((s) => (
                                 <button
                                     key={s}
+                                    type="button"
                                     className={s === preview.selectedSheet ? "btn-primary btn-sm" : "btn-secondary btn-sm"}
                                     onClick={() => setPreview({ ...preview, selectedSheet: s })}
                                 >
@@ -279,8 +306,8 @@ export default function PriceListsPage() {
                     <ColumnMapper mappings={mappings} onChange={setMappings} />
 
                     {/* Data Preview */}
-                    <div className="mt-4">
-                        <div className="label mb-2">Data Preview (first {preview.previewRows.length} rows)</div>
+                    <div className="space-y-2 pt-2 border-t border-border">
+                        <div className="label mb-0">Data Preview (first {preview.previewRows.length} rows)</div>
                         <div className="table-container">
                             <table>
                                 <thead>
@@ -288,7 +315,7 @@ export default function PriceListsPage() {
                                         {preview.headers.map((h, idx) => (
                                             <th
                                                 key={h}
-                                                className={idx === 0 ? "sticky left-0 z-20 bg-muted-bg shadow-[1px_0_0_0_var(--border)]" : ""}
+                                                className={idx === 0 ? "sticky left-0 z-20 bg-muted-bg" : ""}
                                             >
                                                 {h}
                                             </th>
@@ -303,7 +330,7 @@ export default function PriceListsPage() {
                                                     key={h}
                                                     className={`${
                                                         idx === 0
-                                                            ? "sticky left-0 z-10 bg-card-bg shadow-[1px_0_0_0_var(--border)] font-semibold text-foreground"
+                                                            ? "sticky left-0 z-10 bg-card-bg font-semibold text-foreground"
                                                             : "text-foreground/90"
                                                     } max-w-[200px] truncate`}
                                                 >
@@ -320,7 +347,7 @@ export default function PriceListsPage() {
             )}
 
             {importResult && (
-                <div style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: "10px", padding: "14px 20px", fontSize: "14px", color: "#22c55e", marginBottom: "20px" }}>
+                <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-sm">
                     ✅ <strong>{importResult.count.toLocaleString()}</strong> products imported successfully.
                     {importResult.skipped > 0 && ` ${importResult.skipped} rows were skipped.`}
                 </div>
@@ -367,43 +394,23 @@ function BrandCard({
     const hasActive = priceLists.some((pl) => pl.status === "ready");
 
     return (
-        <div className="card" style={{ position: "relative" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
+        <div className="card space-y-3 relative">
+            <div className="flex items-start justify-between">
                 <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <div style={{ fontWeight: 700, fontSize: "15px" }}>{brand}</div>
+                    <div className="flex items-center gap-2">
+                        <div className="font-bold text-base text-foreground">{brand}</div>
                         <button
                             type="button"
                             onClick={onDeleteBrand}
                             title={`Delete brand "${brand}"`}
-                            style={{
-                                background: "none",
-                                border: "none",
-                                cursor: "pointer",
-                                padding: "2px 6px",
-                                borderRadius: "4px",
-                                fontSize: "12px",
-                                color: "var(--muted)",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "2px",
-                                transition: "all 0.15s ease",
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.color = "var(--danger)";
-                                e.currentTarget.style.background = "rgba(239, 68, 68, 0.12)";
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.color = "var(--muted)";
-                                e.currentTarget.style.background = "none";
-                            }}
+                            className="p-1 text-xs text-muted hover:text-red-600 hover:bg-red-500/10 rounded transition-colors"
                         >
                             🗑️
                         </button>
                     </div>
-                    {hasActive && <span className="badge badge-green" style={{ marginTop: "4px" }}>● Active</span>}
+                    {hasActive && <span className="badge badge-green mt-1">● Active</span>}
                 </div>
-                <span style={{ fontSize: "22px" }}>⚡</span>
+                <span className="text-xl">⚡</span>
             </div>
 
             {priceLists.map((pl) => {
@@ -412,24 +419,32 @@ function BrandCard({
                 const fileIcon = isPdf ? "📄 " : isImg ? "🖼️ " : "📊 ";
 
                 return (
-                    <div key={pl.id} style={{ background: "var(--muted-bg)", borderRadius: "8px", padding: "8px 10px", marginBottom: "8px", fontSize: "12px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span title={pl.fileName} style={{ color: "var(--foreground)", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "130px" }}>
+                    <div key={pl.id} className="p-2.5 rounded-lg bg-muted-bg/60 border border-border text-xs space-y-1">
+                        <div className="flex items-center justify-between">
+                            <span title={pl.fileName} className="font-medium text-foreground truncate max-w-[150px]">
                                 {fileIcon}{pl.fileName}
                             </span>
-                            <span className={`badge ${pl.status === "ready" ? "badge-green" : pl.status === "error" ? "badge-red" : "badge-yellow"}`}>{pl.status}</span>
+                            <span className={`badge ${pl.status === "ready" ? "badge-green" : pl.status === "error" ? "badge-red" : "badge-yellow"}`}>
+                                {pl.status}
+                            </span>
                         </div>
                         {pl.productCount > 0 ? (
-                            <div style={{ color: "var(--success)", fontWeight: 600, marginTop: "4px", fontSize: "11px" }}>
+                            <div className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                                 ✅ {pl.productCount.toLocaleString()} products indexed · {pl.uploadDate}
                             </div>
                         ) : (
-                            <div style={{ color: "var(--warning)", fontWeight: 600, marginTop: "4px", fontSize: "11px" }}>
-                                ⚠️ 0 products indexed · Drop file again below to auto-index
+                            <div className="text-[11px] font-semibold text-amber-500">
+                                ⚠️ 0 products indexed · Drop file again below
                             </div>
                         )}
-                        {pl.errorMessage && <div style={{ color: "var(--danger)", marginTop: "4px" }}>{pl.errorMessage}</div>}
-                        <button onClick={() => onRemove(pl.id)} className="btn-danger btn-sm" style={{ marginTop: "6px", width: "100%", justifyContent: "center" }}>Remove File</button>
+                        {pl.errorMessage && <div className="text-[11px] text-red-500">{pl.errorMessage}</div>}
+                        <button
+                            type="button"
+                            onClick={() => onRemove(pl.id)}
+                            className="w-full text-center py-1 rounded text-[11px] text-red-600 hover:bg-red-500/10 transition-colors font-medium"
+                        >
+                            Remove File
+                        </button>
                     </div>
                 );
             })}
@@ -468,14 +483,15 @@ function CustomBrandCard({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="card" style={{ border: "1px dashed var(--border)" }}>
-            <div style={{ fontWeight: 700, fontSize: "15px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
+        <form onSubmit={handleSubmit} className="card border-dashed border-2 space-y-3">
+            <div className="font-bold text-sm text-foreground flex items-center gap-1.5">
                 <span>✨</span> + Add Brand
             </div>
-            <div className="form-group" style={{ marginBottom: "10px" }}>
-                <label className="label">Brand Name</label>
+            <div className="space-y-1">
+                <label htmlFor="custom-brand-name-input" className="label mb-0">Brand Name</label>
                 <input
-                    className="input"
+                    id="custom-brand-name-input"
+                    className="input text-xs"
                     value={brand}
                     onChange={(e) => setBrand(e.target.value)}
                     placeholder="e.g. Eaton, Chint, Havells..."
@@ -488,12 +504,11 @@ function CustomBrandCard({
                 />
             </div>
             <FileDropzone onFile={setFile} label={file ? `📄 ${file.name}` : "Attach price list (optional)"} />
-            <div style={{ marginTop: "12px", display: "flex", gap: "8px" }}>
+            <div className="flex gap-2 pt-1">
                 <button
                     type="submit"
-                    className="btn-primary"
+                    className="btn-primary w-full justify-center text-xs"
                     disabled={!brand.trim()}
-                    style={{ width: "100%", justifyContent: "center" }}
                 >
                     {file ? "🚀 Add Brand & Upload" : "+ Add Brand Card"}
                 </button>
@@ -533,10 +548,10 @@ function FileDropzone({ onFile, label }: { onFile: (file: File) => void; label?:
 
     return (
         <label
-            className={`drop-zone group flex flex-col items-center justify-center p-5 rounded-xl border-2 border-dashed transition-all cursor-pointer ${
+            className={`drop-zone group flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed transition-all cursor-pointer ${
                 dragging
-                    ? "border-accent bg-accent/10"
-                    : "border-border hover:border-accent/80 bg-muted-bg/40 hover:bg-muted-bg/70"
+                    ? "border-blue-600 bg-blue-600/10"
+                    : "border-border hover:border-blue-500 bg-muted-bg/40 hover:bg-muted-bg/70"
             }`}
             onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
             onDragLeave={() => setDragging(false)}
@@ -552,8 +567,8 @@ function FileDropzone({ onFile, label }: { onFile: (file: File) => void; label?:
             <div className="text-xs font-semibold text-foreground">
                 {label || "Drop price list or click to upload"}
             </div>
-            <div className="text-[11px] text-muted mt-1">
-                Excel · CSV · PDF · Images (PNG, JPG, WEBP)
+            <div className="text-[11px] text-muted mt-0.5">
+                Excel · CSV · PDF · Images
             </div>
         </label>
     );
@@ -574,25 +589,27 @@ const FIELD_OPTIONS = [
 
 function ColumnMapper({ mappings, onChange }: { mappings: ColumnMapping[]; onChange: (m: ColumnMapping[]) => void }) {
     return (
-        <div>
-            <div className="label" style={{ marginBottom: "8px" }}>Column Mappings</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+        <div className="space-y-2">
+            <div className="label mb-0">Column Mappings</div>
+            <div className="flex flex-wrap gap-2">
                 {mappings.map((m, i) => (
-                    <div key={i} style={{ background: "var(--muted-bg)", borderRadius: "8px", padding: "8px 10px", minWidth: "180px" }}>
-                        <div style={{ fontSize: "12px", color: "var(--muted)", marginBottom: "4px" }}>{m.originalHeader}</div>
+                    <div key={i} className="p-2.5 rounded-lg bg-muted-bg/60 border border-border min-w-[180px] space-y-1">
+                        <label htmlFor={`map-col-${i}`} className="text-xs text-muted block truncate font-medium">
+                            {m.originalHeader}
+                        </label>
                         <select
-                            className="select"
+                            id={`map-col-${i}`}
+                            className="select text-xs py-1 px-2"
                             value={m.mappedTo}
                             onChange={(e) => {
                                 const updated = [...mappings];
                                 updated[i] = { ...m, mappedTo: e.target.value as ColumnMapping["mappedTo"], aiSuggested: false };
                                 onChange(updated);
                             }}
-                            style={{ fontSize: "12px", padding: "4px 8px" }}
                         >
                             {FIELD_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                         </select>
-                        <div style={{ marginTop: "4px", fontSize: "10px" }}>
+                        <div className="text-[10px]">
                             <span className={`badge ${m.confidence >= 0.8 ? "badge-green" : m.confidence >= 0.5 ? "badge-yellow" : "badge-gray"}`}>
                                 {m.aiSuggested ? "🤖 AI" : "Auto"} · {Math.round(m.confidence * 100)}%
                             </span>

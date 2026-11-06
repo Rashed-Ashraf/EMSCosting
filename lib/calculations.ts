@@ -5,6 +5,25 @@
 
 import type { CostingItem, CostingTotals, CostingSession, Product } from "./types";
 import { nanoid } from "./utils";
+import {
+    DEFAULT_CURRENCY,
+    DEFAULT_GST_RATE,
+    formatCurrency,
+    calculateGST,
+    calculateGrandTotal,
+    GST_RATE_OPTIONS,
+    SUPPORTED_CURRENCIES,
+} from "./currency";
+
+export {
+    DEFAULT_CURRENCY,
+    DEFAULT_GST_RATE,
+    formatCurrency,
+    calculateGST,
+    calculateGrandTotal,
+    GST_RATE_OPTIONS,
+    SUPPORTED_CURRENCIES,
+};
 
 /**
  * Calculate net cost from list price and discount
@@ -48,7 +67,10 @@ export function recalcItem(item: CostingItem): CostingItem {
 /**
  * Recalculate all session totals
  */
-export function calcTotals(items: CostingItem[], gstRate: number): CostingTotals {
+export function calcTotals(
+    items: CostingItem[],
+    gstRate: number = DEFAULT_GST_RATE
+): CostingTotals {
     const subtotalCost = round2(items.reduce((s, i) => s + i.totalCost, 0));
     const subtotalSelling = round2(items.reduce((s, i) => s + i.totalSelling, 0));
     const gstAmount = round2(subtotalSelling * gstRate);
@@ -98,39 +120,6 @@ export function createCostingItem(
         totalSelling: calcTotalSelling(sellingPrice, qty),
         ...overrides,
     });
-}
-
-/**
- * Format a number as currency string
- */
-export function formatCurrency(
-    value: number,
-    currency = "PKR",
-    decimals = 0
-): string {
-    const val = typeof value === "number" && !isNaN(value) ? value : 0;
-    const curr = (currency || "PKR").toUpperCase();
-
-    if (curr === "PKR" || curr === "RS" || curr === "RS.") {
-        return `PKR ${new Intl.NumberFormat("en-PK", {
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals,
-        }).format(val)}`;
-    }
-
-    try {
-        return new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: curr,
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals,
-        }).format(val);
-    } catch {
-        return `${curr} ${new Intl.NumberFormat("en-US", {
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals,
-        }).format(val)}`;
-    }
 }
 
 /**

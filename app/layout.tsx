@@ -32,7 +32,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />
-      <main className="flex-1 overflow-auto flex flex-col bg-background border-t-[3px] border-[#1d4ed8]">
+      <main className="flex-1 overflow-auto flex flex-col bg-background border-t-2 border-blue-600">
         {children}
       </main>
     </div>
@@ -41,10 +41,10 @@ function AppShell({ children }: { children: React.ReactNode }) {
 
 function Sidebar() {
   return (
-    <aside className="w-[230px] min-w-[230px] bg-sidebar-bg border-r border-sidebar-border border-t-[3px] border-t-[#dc2626] flex flex-col h-screen overflow-y-auto select-none">
+    <aside className="w-56 min-w-56 bg-sidebar-bg border-r border-sidebar-border border-t-2 border-t-red-600 flex flex-col h-screen overflow-y-auto select-none">
       {/* Brand Header */}
       <div className="px-5 py-4 border-b border-sidebar-border">
-        <div className="flex items-center gap-1.5 text-[#dc2626] font-extrabold text-[12px] tracking-[0.14em] uppercase">
+        <div className="flex items-center gap-1.5 text-red-600 font-extrabold text-xs tracking-wider uppercase">
           <span>⚡</span>
           <span>ELECTRICAL MASTER</span>
         </div>

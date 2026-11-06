@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { formatCurrency, formatPercent } from "@/lib/calculations";
 import type { Product } from "@/lib/types";
+import { formatCurrency, formatPercent } from "@/lib/calculations";
 
 interface ExtractedPriceListCatalogProps {
     products: Product[];
@@ -26,7 +26,7 @@ export default function ExtractedPriceListCatalog({
     const [selectedCategory, setSelectedCategory] = useState<string>("all");
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
-    // Extract unique categories
+    // Unique categories across loaded products
     const categories = useMemo(() => {
         const set = new Set<string>();
         for (const p of products) {
@@ -35,28 +35,30 @@ export default function ExtractedPriceListCatalog({
         return Array.from(set).sort();
     }, [products]);
 
-    // Financial totals
-    const totalCatalogValue = useMemo(() => {
-        return products.reduce((sum, p) => sum + (p.netCost || p.listPrice || 0), 0);
-    }, [products]);
-
     // Filter products
     const filteredProducts = useMemo(() => {
+        const s = search.trim().toLowerCase();
         return products.filter((p) => {
             if (selectedBrand !== "all" && p.brand.toLowerCase() !== selectedBrand.toLowerCase()) {
                 return false;
             }
-            if (selectedCategory !== "all" && (p.category || "").toLowerCase() !== selectedCategory.toLowerCase()) {
+            if (selectedCategory !== "all" && p.category?.toLowerCase() !== selectedCategory.toLowerCase()) {
                 return false;
             }
-            if (search.trim()) {
-                const q = search.toLowerCase();
-                const text = `${p.productCode} ${p.brand} ${p.description || ""} ${p.category || ""}`.toLowerCase();
-                if (!text.includes(q)) return false;
-            }
-            return true;
+            if (!s) return true;
+            return (
+                p.productCode.toLowerCase().includes(s) ||
+                p.description.toLowerCase().includes(s) ||
+                p.brand.toLowerCase().includes(s) ||
+                (p.category && p.category.toLowerCase().includes(s))
+            );
         });
-    }, [products, selectedBrand, selectedCategory, search]);
+    }, [products, search, selectedBrand, selectedCategory]);
+
+    // Catalog total valuation
+    const totalCatalogValue = useMemo(() => {
+        return products.reduce((sum, p) => sum + (p.netCost || 0), 0);
+    }, [products]);
 
     const handleCopy = (code: string) => {
         if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -71,160 +73,109 @@ export default function ExtractedPriceListCatalog({
     }
 
     return (
-        <div
-            className="card"
-            style={{
-                marginTop: "28px",
-                border: "1.5px solid rgba(59, 130, 246, 0.35)",
-                background: "linear-gradient(180deg, rgba(59, 130, 246, 0.04) 0%, var(--card) 100%)",
-                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.2)",
-                padding: "20px 24px",
-            }}
-        >
+        <div className="card space-y-4 border-blue-500/30 bg-gradient-to-b from-blue-500/5 to-card shadow-sm">
             {/* Section Header */}
-            <div
-                style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    gap: "16px",
-                    flexWrap: "wrap",
-                    marginBottom: "16px",
-                }}
-            >
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-border">
                 <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                        <span style={{ fontSize: "22px" }}>📚</span>
-                        <h2 style={{ fontSize: "17px", fontWeight: 700, margin: 0, color: "var(--foreground)" }}>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xl">📚</span>
+                        <h2 className="text-base font-bold text-foreground">
                             Extracted Price Lists & Product Catalog
                         </h2>
-                        <span className="badge badge-green" style={{ fontSize: "12px", fontWeight: 600 }}>
+                        <span className="badge badge-green text-xs font-semibold">
                             {products.length.toLocaleString()} Products Indexed
                         </span>
-                        <span className="badge badge-purple" style={{ fontSize: "12px" }}>
+                        <span className="badge badge-purple text-xs">
                             Currency: PKR (₨)
                         </span>
                     </div>
-                    <p style={{ color: "var(--muted)", fontSize: "13px", marginTop: "4px", marginBottom: 0 }}>
+                    <p className="text-xs text-muted mt-1">
                         All products extracted from your uploaded brand price lists. Search by code, filter by brand, or inspect pricing.
                     </p>
                 </div>
 
-                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+                <div className="flex items-center gap-2 flex-wrap">
                     {selectedBrand !== "all" && onDeleteByBrand && (
                         <button
                             type="button"
-                            className="btn-secondary btn-sm"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-600 hover:text-red-700 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 transition-colors"
                             onClick={() => {
                                 if (typeof window !== "undefined" && window.confirm(`Are you sure you want to delete all ${filteredProducts.length.toLocaleString()} indexed products for brand "${selectedBrand}"?`)) {
                                     onDeleteByBrand(selectedBrand);
                                 }
                             }}
-                            style={{
-                                fontSize: "12px",
-                                color: "var(--danger)",
-                                borderColor: "rgba(239, 68, 68, 0.4)",
-                                background: "rgba(239, 68, 68, 0.08)",
-                                cursor: "pointer",
-                            }}
                         >
-                            🗑️ Delete {selectedBrand} ({filteredProducts.length.toLocaleString()})
+                            <span>🗑️</span> Delete {selectedBrand} ({filteredProducts.length.toLocaleString()})
                         </button>
                     )}
                     {onClearAll && (
                         <button
                             type="button"
-                            className="btn-danger btn-sm"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors"
                             onClick={() => {
                                 if (typeof window !== "undefined" && window.confirm(`Are you sure you want to delete ALL ${products.length.toLocaleString()} indexed products from the catalog?\n\nThis will completely wipe all previously indexed product records.`)) {
                                     onClearAll();
                                 }
                             }}
-                            style={{
-                                fontSize: "12px",
-                                fontWeight: 600,
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "6px",
-                                background: "#dc2626",
-                                color: "#ffffff",
-                                boxShadow: "0 2px 8px rgba(220, 38, 38, 0.3)",
-                                cursor: "pointer",
-                                padding: "6px 14px",
-                                borderRadius: "8px",
-                            }}
                         >
                             <span>🗑️</span>
-                            <span>Delete All Indexed Records ({products.length.toLocaleString()})</span>
+                            <span>Delete All ({products.length.toLocaleString()})</span>
                         </button>
                     )}
                 </div>
             </div>
 
             {/* Metrics */}
-            <div
-                style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-                    gap: "12px",
-                    marginBottom: "18px",
-                }}
-            >
-                <div style={{ background: "var(--muted-bg)", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border)" }}>
-                    <div style={{ fontSize: "11px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 600 }}>Total Products</div>
-                    <div style={{ fontSize: "18px", fontWeight: 800, color: "var(--foreground)", marginTop: "2px" }}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3 rounded-xl bg-muted-bg/60 border border-border">
+                    <div className="text-[11px] font-semibold text-muted uppercase tracking-wider">Total Products</div>
+                    <div className="text-lg font-extrabold text-foreground mt-0.5">
                         {products.length.toLocaleString()} Items
                     </div>
                 </div>
 
-                <div style={{ background: "var(--muted-bg)", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border)" }}>
-                    <div style={{ fontSize: "11px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 600 }}>Catalog Brands</div>
-                    <div style={{ fontSize: "18px", fontWeight: 800, color: "var(--accent)", marginTop: "2px" }}>
+                <div className="p-3 rounded-xl bg-muted-bg/60 border border-border">
+                    <div className="text-[11px] font-semibold text-muted uppercase tracking-wider">Catalog Brands</div>
+                    <div className="text-lg font-extrabold text-blue-600 dark:text-blue-400 mt-0.5">
                         {activeBrands.length} Brands
                     </div>
                 </div>
 
-                <div style={{ background: "var(--muted-bg)", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border)" }}>
-                    <div style={{ fontSize: "11px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 600 }}>Filtered Results</div>
-                    <div style={{ fontSize: "18px", fontWeight: 800, color: "var(--success)", marginTop: "2px" }}>
+                <div className="p-3 rounded-xl bg-muted-bg/60 border border-border">
+                    <div className="text-[11px] font-semibold text-muted uppercase tracking-wider">Filtered Results</div>
+                    <div className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
                         {filteredProducts.length.toLocaleString()} Showing
                     </div>
                 </div>
 
-                <div style={{ background: "var(--muted-bg)", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border)" }}>
-                    <div style={{ fontSize: "11px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 600 }}>Total Catalog Value (PKR)</div>
-                    <div style={{ fontSize: "18px", fontWeight: 800, color: "var(--success)", marginTop: "2px" }}>
+                <div className="p-3 rounded-xl bg-muted-bg/60 border border-border">
+                    <div className="text-[11px] font-semibold text-muted uppercase tracking-wider">Total Catalog Value (PKR)</div>
+                    <div className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
                         {formatCurrency(totalCatalogValue, "PKR")}
                     </div>
                 </div>
             </div>
 
             {/* Search and Filters */}
-            <div
-                style={{
-                    display: "flex",
-                    gap: "10px",
-                    alignItems: "center",
-                    marginBottom: "14px",
-                    flexWrap: "wrap",
-                }}
-            >
-                <div style={{ flex: 1, minWidth: "220px", position: "relative" }}>
+            <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex-1 min-w-[220px] relative">
+                    <label htmlFor="catalog-search-input" className="sr-only">Search catalog</label>
                     <input
-                        className="input"
-                        style={{ paddingLeft: "32px", height: "36px", fontSize: "13px" }}
+                        id="catalog-search-input"
+                        className="input pl-8 text-xs h-9"
                         placeholder="Search product code, brand, description..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
-                    <span style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }}>
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted text-xs">
                         🔍
                     </span>
                 </div>
 
+                <label htmlFor="catalog-brand-filter" className="sr-only">Filter by brand</label>
                 <select
-                    className="select"
-                    style={{ height: "36px", fontSize: "12px", minWidth: "140px" }}
+                    id="catalog-brand-filter"
+                    className="select text-xs h-9 min-w-[140px] w-auto"
                     value={selectedBrand}
                     onChange={(e) => setSelectedBrand(e.target.value)}
                 >
@@ -235,29 +186,31 @@ export default function ExtractedPriceListCatalog({
                 </select>
 
                 {categories.length > 0 && (
-                    <select
-                        className="select"
-                        style={{ height: "36px", fontSize: "12px", minWidth: "140px" }}
-                        value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                    >
-                        <option value="all">All Categories ({categories.length})</option>
-                        {categories.map((c) => (
-                            <option key={c} value={c}>{c}</option>
-                        ))}
-                    </select>
+                    <>
+                        <label htmlFor="catalog-category-filter" className="sr-only">Filter by category</label>
+                        <select
+                            id="catalog-category-filter"
+                            className="select text-xs h-9 min-w-[140px] w-auto"
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                        >
+                            <option value="all">All Categories ({categories.length})</option>
+                            {categories.map((c) => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
+                        </select>
+                    </>
                 )}
 
                 {(search || selectedBrand !== "all" || selectedCategory !== "all") && (
                     <button
                         type="button"
-                        className="btn-ghost btn-sm"
+                        className="btn-ghost btn-sm text-xs"
                         onClick={() => {
                             setSearch("");
                             setSelectedBrand("all");
                             setSelectedCategory("all");
                         }}
-                        style={{ fontSize: "12px" }}
                     >
                         ✕ Reset
                     </button>
@@ -265,85 +218,77 @@ export default function ExtractedPriceListCatalog({
             </div>
 
             {/* Products Table */}
-            <div className="table-container" style={{ maxHeight: "420px", overflowY: "auto" }}>
+            <div className="table-container max-h-[420px] overflow-y-auto">
                 <table>
-                    <thead>
+                    <thead className="sticky top-0 bg-muted-bg z-10">
                         <tr>
-                            <th className="sticky left-0 z-20 bg-muted-bg text-center w-10 shadow-[1px_0_0_0_var(--border)]">#</th>
+                            <th className="sticky left-0 z-20 bg-muted-bg text-center w-10">#</th>
                             <th>Product Code</th>
                             <th>Brand</th>
                             <th>Category</th>
                             <th>Description</th>
-                            <th style={{ textAlign: "right" }}>List Price (PKR)</th>
-                            <th style={{ textAlign: "center" }}>Disc %</th>
-                            <th style={{ textAlign: "right" }}>Net Cost (PKR)</th>
-                            <th style={{ textAlign: "center" }}>Unit</th>
-                            <th style={{ textAlign: "center", width: "100px" }}>Action</th>
+                            <th className="text-right">List Price (PKR)</th>
+                            <th className="text-center">Disc %</th>
+                            <th className="text-right">Net Cost (PKR)</th>
+                            <th className="text-center">Unit</th>
+                            <th className="text-center w-24">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredProducts.slice(0, 100).map((prod, idx) => {
                             return (
                                 <tr key={prod.id || `${prod.productCode}-${idx}`} className="hover:bg-muted-bg/50 transition-colors">
-                                    <td className="sticky left-0 z-10 bg-card-bg text-center text-xs font-semibold text-muted shadow-[1px_0_0_0_var(--border)]">
+                                    <td className="sticky left-0 z-10 bg-card-bg text-center text-xs font-semibold text-muted">
                                         {idx + 1}
                                     </td>
-                                    <td style={{ fontWeight: 700, fontSize: "13px", whiteSpace: "nowrap" }}>
-                                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                    <td className="font-bold text-xs whitespace-nowrap font-mono text-foreground">
+                                        <div className="flex items-center gap-1.5">
                                             <span>{prod.productCode}</span>
                                             <button
                                                 type="button"
                                                 onClick={() => handleCopy(prod.productCode)}
                                                 title="Copy code"
-                                                style={{
-                                                    background: "none",
-                                                    border: "none",
-                                                    cursor: "pointer",
-                                                    fontSize: "11px",
-                                                    padding: "2px",
-                                                    opacity: 0.7,
-                                                }}
+                                                className="text-[11px] p-0.5 opacity-70 hover:opacity-100"
                                             >
                                                 {copiedCode === prod.productCode ? "✅" : "📋"}
                                             </button>
                                         </div>
                                     </td>
                                     <td>
-                                        <span className="badge badge-blue" style={{ fontSize: "11px" }}>
+                                        <span className="badge badge-blue text-[11px]">
                                             {prod.brand}
                                         </span>
                                     </td>
                                     <td>
                                         {prod.category ? (
-                                            <span className="badge badge-purple" style={{ fontSize: "11px" }}>
+                                            <span className="badge badge-purple text-[11px]">
                                                 {prod.category}
                                             </span>
                                         ) : (
-                                            <span style={{ color: "var(--muted)", fontSize: "11px" }}>—</span>
+                                            <span className="text-muted text-xs">—</span>
                                         )}
                                     </td>
-                                    <td style={{ fontSize: "12px", maxWidth: "300px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                    <td className="text-xs max-w-xs truncate">
                                         {prod.description}
                                     </td>
-                                    <td style={{ textAlign: "right", fontSize: "12px", color: "var(--muted)", whiteSpace: "nowrap" }}>
+                                    <td className="text-right text-xs text-muted whitespace-nowrap">
                                         {formatCurrency(prod.listPrice, "PKR")}
                                     </td>
-                                    <td style={{ textAlign: "center", fontSize: "12px" }}>
+                                    <td className="text-center text-xs">
                                         {formatPercent(prod.discount)}
                                     </td>
-                                    <td style={{ textAlign: "right", fontWeight: 700, color: "var(--success)", fontSize: "13px", whiteSpace: "nowrap" }}>
+                                    <td className="text-right font-bold text-emerald-600 dark:text-emerald-400 text-xs whitespace-nowrap">
                                         {formatCurrency(prod.netCost, "PKR")}
                                     </td>
-                                    <td style={{ textAlign: "center", fontSize: "12px", color: "var(--muted)" }}>
+                                    <td className="text-center text-xs text-muted">
                                         {prod.unit || "Pcs"}
                                     </td>
-                                    <td style={{ textAlign: "center" }}>
-                                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+                                    <td className="text-center">
+                                        <div className="flex items-center justify-center gap-1.5">
                                             {onAddToCosting ? (
                                                 <button
                                                     type="button"
-                                                    className="btn-primary btn-sm"
-                                                    style={{ padding: "3px 8px", fontSize: "11px" }}
+                                                    className="btn-primary btn-sm text-[11px] py-1 px-2.5"
                                                     onClick={() => onAddToCosting(prod)}
                                                 >
                                                     + Add
@@ -351,8 +296,7 @@ export default function ExtractedPriceListCatalog({
                                             ) : (
                                                 <button
                                                     type="button"
-                                                    className="btn-secondary btn-sm"
-                                                    style={{ padding: "3px 8px", fontSize: "11px" }}
+                                                    className="btn-secondary btn-sm text-[11px] py-1 px-2.5"
                                                     onClick={() => handleCopy(prod.productCode)}
                                                 >
                                                     {copiedCode === prod.productCode ? "Copied" : "Copy"}
@@ -367,14 +311,7 @@ export default function ExtractedPriceListCatalog({
                                                         }
                                                     }}
                                                     title={`Delete ${prod.productCode} from index`}
-                                                    style={{
-                                                        background: "none",
-                                                        border: "none",
-                                                        cursor: "pointer",
-                                                        fontSize: "13px",
-                                                        padding: "3px",
-                                                        opacity: 0.65,
-                                                    }}
+                                                    className="p-1 text-xs opacity-60 hover:opacity-100 hover:text-red-600 transition-opacity"
                                                 >
                                                     🗑️
                                                 </button>
@@ -389,7 +326,7 @@ export default function ExtractedPriceListCatalog({
             </div>
 
             {filteredProducts.length > 100 && (
-                <div style={{ textAlign: "center", marginTop: "10px", fontSize: "12px", color: "var(--muted)" }}>
+                <div className="text-center text-xs text-muted pt-1">
                     Showing first 100 of {filteredProducts.length.toLocaleString()} matching products. Use search above to narrow down.
                 </div>
             )}

@@ -409,50 +409,28 @@ export default function RequirementWizard({
     if (!isOpen) return null;
 
     return (
-        <div className="modal-backdrop" style={{ zIndex: 1100 }}>
-            <div
-                className="modal-box"
-                style={{
-                    maxWidth: "960px",
-                    width: "95vw",
-                    maxHeight: "92vh",
-                    display: "flex",
-                    flexDirection: "column",
-                    padding: 0,
-                    overflow: "hidden",
-                    borderRadius: "16px",
-                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.4)",
-                }}
-            >
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-card text-card-foreground rounded-2xl border border-border shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                 {/* Header */}
-                <div
-                    style={{
-                        padding: "18px 24px",
-                        borderBottom: "1px solid var(--border)",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        background: "var(--card)",
-                    }}
-                >
+                <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-card shrink-0">
                     <div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                            <span style={{ fontSize: "22px" }}>⚡</span>
-                            <h2 style={{ fontSize: "17px", fontWeight: 700, margin: 0 }}>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xl">⚡</span>
+                            <h2 className="text-base font-bold text-foreground">
                                 Requirement Matching & Model Selection
                             </h2>
-                            <span className="badge badge-purple">
+                            <span className="badge badge-purple text-xs">
                                 {fileName || "Requirement File"}
                             </span>
                         </div>
-                        <p style={{ color: "var(--muted)", fontSize: "12px", marginTop: "4px", marginBottom: 0 }}>
+                        <p className="text-xs text-muted mt-1">
                             Reviewing Item {currentIndex + 1} of {totalItems} · {confirmedCount} confirmed · {skippedCount} skipped
                         </p>
                     </div>
                     <button
-                        className="btn-ghost btn-sm"
+                        type="button"
+                        className="p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-muted-bg text-base transition-colors"
                         onClick={onClose}
-                        style={{ fontSize: "16px", padding: "4px 8px" }}
                         title="Close Wizard"
                     >
                         ✕
@@ -462,37 +440,20 @@ export default function RequirementWizard({
                 {/* All Items Navigation Pill Bar */}
                 <div
                     ref={pillContainerRef}
-                    style={{
-                        display: "flex",
-                        gap: "6px",
-                        padding: "10px 24px",
-                        background: "var(--muted-bg)",
-                        borderBottom: "1px solid var(--border)",
-                        overflowX: "auto",
-                        whiteSpace: "nowrap",
-                    }}
+                    className="flex gap-1.5 px-6 py-2.5 bg-muted-bg border-b border-border overflow-x-auto whitespace-nowrap shrink-0"
                 >
                     {wizardItems.map((wItem, idx) => {
                         const isActive = idx === currentIndex;
                         const isConfirmed = wItem.status === "confirmed";
                         const isSkipped = wItem.status === "skipped";
 
-                        let bg = "var(--card)";
-                        let border = "1px solid var(--border)";
-                        let color = "var(--foreground)";
-
+                        let pillClass = "bg-card text-foreground border-border hover:bg-muted-bg/80";
                         if (isActive) {
-                            bg = "rgba(59, 130, 246, 0.15)";
-                            border = "2px solid var(--accent)";
-                            color = "var(--accent)";
+                            pillClass = "bg-blue-600/15 text-blue-600 dark:text-blue-400 border-blue-600 font-bold shadow-xs";
                         } else if (isConfirmed) {
-                            bg = "rgba(34, 197, 94, 0.12)";
-                            border = "1px solid rgba(34, 197, 94, 0.3)";
-                            color = "var(--success)";
+                            pillClass = "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30";
                         } else if (isSkipped) {
-                            bg = "rgba(245, 158, 11, 0.1)";
-                            border = "1px solid rgba(245, 158, 11, 0.3)";
-                            color = "var(--warning)";
+                            pillClass = "bg-amber-500/10 text-amber-500 border-amber-500/30";
                         }
 
                         return (
@@ -503,24 +464,10 @@ export default function RequirementWizard({
                                     setCurrentIndex(idx);
                                     setIsCompleted(false);
                                 }}
-                                style={{
-                                    background: bg,
-                                    border,
-                                    color,
-                                    borderRadius: "8px",
-                                    padding: "5px 12px",
-                                    fontSize: "12px",
-                                    fontWeight: isActive ? 700 : 500,
-                                    cursor: "pointer",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "6px",
-                                    flexShrink: 0,
-                                    transition: "all 0.15s ease",
-                                }}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium shrink-0 transition-colors ${pillClass}`}
                             >
-                                <span>#{wItem.item.lineNo}</span>
-                                <span style={{ maxWidth: "120px", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                <span className="font-mono">#{wItem.item.lineNo}</span>
+                                <span className="max-w-[120px] truncate">
                                     {wItem.item.description}
                                 </span>
                                 {isConfirmed && <span>✅</span>}
@@ -531,18 +478,19 @@ export default function RequirementWizard({
                 </div>
 
                 {/* Main Content Area */}
-                <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
                     {isCompleted ? (
-                        <div style={{ textAlign: "center", padding: "40px 20px" }}>
-                            <div style={{ fontSize: "48px", marginBottom: "16px" }}>🎉</div>
-                            <h3 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "8px" }}>
+                        <div className="text-center py-12 px-4 space-y-3">
+                            <div className="text-5xl">🎉</div>
+                            <h3 className="text-xl font-bold text-foreground">
                                 All Requirement Items Processed!
                             </h3>
-                            <p style={{ color: "var(--muted)", fontSize: "14px", maxWidth: "480px", margin: "0 auto 24px" }}>
+                            <p className="text-xs sm:text-sm text-muted max-w-md mx-auto">
                                 You have reviewed all <strong>{totalItems}</strong> requirement items. <strong>{confirmedCount}</strong> products have been added to your Costing sheet.
                             </p>
-                            <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
+                            <div className="flex items-center justify-center gap-3 pt-2">
                                 <button
+                                    type="button"
                                     className="btn-secondary"
                                     onClick={() => {
                                         setIsCompleted(false);
@@ -552,6 +500,7 @@ export default function RequirementWizard({
                                     Review Items Again
                                 </button>
                                 <button
+                                    type="button"
                                     className="btn-primary"
                                     onClick={() => {
                                         onClose();
@@ -563,49 +512,32 @@ export default function RequirementWizard({
                             </div>
                         </div>
                     ) : currentWizardItem ? (
-                        <div>
+                        <div className="space-y-4">
                             {/* Current Requirement Specification Card */}
-                            <div
-                                style={{
-                                    background: "var(--muted-bg)",
-                                    border: "1px solid var(--border)",
-                                    borderRadius: "12px",
-                                    padding: "16px 20px",
-                                    marginBottom: "18px",
-                                }}
-                            >
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px", marginBottom: "12px" }}>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: "12px", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700, marginBottom: "4px" }}>
+                            <div className="p-4 rounded-xl bg-muted-bg/60 border border-border space-y-3">
+                                <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                                    <div className="space-y-1 flex-1">
+                                        <div className="text-[11px] text-muted uppercase font-bold tracking-wider">
                                             Original Requirement (Line #{currentWizardItem.item.lineNo})
                                         </div>
-                                        <div style={{ fontSize: "16px", fontWeight: 700, color: "var(--foreground)", lineHeight: 1.4 }}>
+                                        <div className="text-base font-bold text-foreground leading-snug">
                                             {currentWizardItem.item.description}
                                         </div>
                                     </div>
 
                                     {/* Quantity Editor */}
-                                    <div style={{ background: "var(--card)", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--border)", textAlign: "right" }}>
-                                        <div style={{ fontSize: "11px", color: "var(--muted)", marginBottom: "4px" }}>Requirement Qty</div>
-                                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                    <div className="p-2.5 rounded-lg bg-card border border-border shrink-0 self-end sm:self-auto text-right">
+                                        <label htmlFor="wizard-qty-input" className="text-[11px] text-muted block mb-1">Requirement Qty</label>
+                                        <div className="flex items-center gap-1.5">
                                             <input
+                                                id="wizard-qty-input"
                                                 type="number"
                                                 min="1"
                                                 value={currentWizardItem.qty}
                                                 onChange={(e) => handleUpdateQty(Math.max(1, parseInt(e.target.value) || 1))}
-                                                style={{
-                                                    width: "60px",
-                                                    padding: "4px 8px",
-                                                    borderRadius: "6px",
-                                                    background: "var(--input-bg)",
-                                                    border: "1px solid var(--border)",
-                                                    color: "var(--foreground)",
-                                                    fontWeight: 700,
-                                                    fontSize: "14px",
-                                                    textAlign: "center",
-                                                }}
+                                                className="w-16 px-2 py-1 rounded-md bg-input-bg border border-input-border text-foreground font-bold text-xs text-center focus:border-blue-600 outline-none"
                                             />
-                                            <span style={{ fontSize: "12px", color: "var(--muted)" }}>
+                                            <span className="text-xs text-muted">
                                                 {currentWizardItem.item.unit || "EA"}
                                             </span>
                                         </div>
@@ -613,13 +545,13 @@ export default function RequirementWizard({
                                 </div>
 
                                 {/* Extracted Specs Badges */}
-                                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center", paddingTop: "8px", borderTop: "1px dashed var(--border)" }}>
-                                    <span style={{ fontSize: "11px", color: "var(--muted)", fontWeight: 600 }}>Extracted Specs:</span>
+                                <div className="flex flex-wrap gap-1.5 items-center pt-2 border-t border-border/60">
+                                    <span className="text-[11px] text-muted font-semibold">Extracted Specs:</span>
                                     {(currentWizardItem.item.category || currentWizardItem.spec.componentType) && (
                                         <span className="badge badge-purple">🏷️ Category: {currentWizardItem.item.category || currentWizardItem.spec.componentType}</span>
                                     )}
                                     {currentWizardItem.item.model && (
-                                        <span className="badge badge-purple" style={{ fontWeight: 700 }}>📦 Model: {currentWizardItem.item.model}</span>
+                                        <span className="badge badge-purple font-bold">📦 Model: {currentWizardItem.item.model}</span>
                                     )}
                                     {currentWizardItem.spec.currentRating && (
                                         <span className="badge badge-green">⚡ Rating: {currentWizardItem.spec.currentRating}</span>
@@ -646,32 +578,19 @@ export default function RequirementWizard({
 
                                 {/* Extracted Mentioned Price Banner (from requirement file) */}
                                 {typeof currentWizardItem.item.unitPrice === "number" && currentWizardItem.item.unitPrice > 0 && (
-                                    <div
-                                        style={{
-                                            marginTop: "12px",
-                                            background: "rgba(34, 197, 94, 0.1)",
-                                            border: "1px solid rgba(34, 197, 94, 0.3)",
-                                            borderRadius: "8px",
-                                            padding: "8px 14px",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "space-between",
-                                            flexWrap: "wrap",
-                                            gap: "8px",
-                                        }}
-                                    >
-                                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                            <span style={{ fontSize: "16px" }}>💰</span>
-                                            <span style={{ fontWeight: 600, fontSize: "13px", color: "var(--foreground)" }}>
+                                    <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between flex-wrap gap-2 text-xs">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm">💰</span>
+                                            <span className="font-semibold text-foreground">
                                                 Mentioned Price in Document:
                                             </span>
-                                            <span style={{ fontWeight: 800, fontSize: "14px", color: "var(--success)" }}>
+                                            <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
                                                 PKR {currentWizardItem.item.unitPrice.toLocaleString()} / {currentWizardItem.item.unit || "Pcs"}
                                             </span>
                                         </div>
                                         {typeof currentWizardItem.item.totalPrice === "number" && currentWizardItem.item.totalPrice > 0 && (
-                                            <div style={{ fontSize: "12px", color: "var(--muted)" }}>
-                                                Extracted Line Total: <strong style={{ color: "var(--foreground)" }}>PKR {currentWizardItem.item.totalPrice.toLocaleString()}</strong>
+                                            <div className="text-muted">
+                                                Extracted Line Total: <strong className="text-foreground">PKR {currentWizardItem.item.totalPrice.toLocaleString()}</strong>
                                             </div>
                                         )}
                                     </div>
@@ -679,29 +598,31 @@ export default function RequirementWizard({
                             </div>
 
                             {/* Catalog Options Section */}
-                            <div>
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "8px" }}>
+                            <div className="space-y-3">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                                     <div>
-                                        <h3 style={{ fontSize: "15px", fontWeight: 700, margin: 0 }}>
+                                        <h3 className="text-sm font-bold text-foreground">
                                             Available Models Found in Catalog ({displayedOptions.length})
                                         </h3>
-                                        <p style={{ color: "var(--muted)", fontSize: "12px", margin: "2px 0 0 0" }}>
+                                        <p className="text-xs text-muted">
                                             Select the model you wish to use for this requirement line item
                                         </p>
                                     </div>
 
                                     {/* Search refinement & brand filter */}
-                                    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                                    <div className="flex items-center gap-2">
+                                        <label htmlFor="wizard-refine-input" className="sr-only">Refine model search</label>
                                         <input
-                                            className="input"
-                                            style={{ fontSize: "12px", height: "32px", width: "190px", padding: "4px 10px" }}
+                                            id="wizard-refine-input"
+                                            className="input text-xs h-8 w-44"
                                             placeholder="Refine model code/desc..."
                                             value={searchRefinement}
                                             onChange={(e) => setSearchRefinement(e.target.value)}
                                         />
+                                        <label htmlFor="wizard-brand-override" className="sr-only">Filter by brand</label>
                                         <select
-                                            className="select"
-                                            style={{ fontSize: "12px", height: "32px", padding: "4px 8px" }}
+                                            id="wizard-brand-override"
+                                            className="select text-xs h-8 w-auto"
                                             value={brandOverride}
                                             onChange={(e) => setBrandOverride(e.target.value)}
                                         >
@@ -715,38 +636,20 @@ export default function RequirementWizard({
 
                                 {/* Model Candidates List */}
                                 {displayedOptions.length === 0 ? (
-                                    <div
-                                        style={{
-                                            padding: "32px 20px",
-                                            textAlign: "center",
-                                            background: "rgba(245, 158, 11, 0.08)",
-                                            border: "1px solid rgba(245, 158, 11, 0.25)",
-                                            borderRadius: "10px",
-                                            color: "var(--warning)",
-                                        }}
-                                    >
-                                        <div style={{ fontSize: "24px", marginBottom: "6px" }}>🔍</div>
-                                        <div style={{ fontWeight: 600, fontSize: "14px", marginBottom: "4px" }}>
+                                    <div className="p-8 text-center bg-amber-500/10 border border-amber-500/25 rounded-xl text-amber-600 dark:text-amber-400 space-y-2">
+                                        <div className="text-2xl">🔍</div>
+                                        <div className="font-semibold text-sm">
                                             No matching catalog models found for these specifications
                                         </div>
-                                        <p style={{ fontSize: "12px", color: "var(--muted)", maxWidth: "460px", margin: "0 auto 12px" }}>
+                                        <p className="text-xs text-muted max-w-md mx-auto">
                                             Try switching the brand filter above, typing a part code in the search refinement box, or skip this item.
                                         </p>
-                                        <button className="btn-secondary btn-sm" onClick={handleSkip}>
+                                        <button type="button" className="btn-secondary btn-sm" onClick={handleSkip}>
                                             ⏭️ Skip this Requirement
                                         </button>
                                     </div>
                                 ) : (
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            gap: "8px",
-                                            maxHeight: "360px",
-                                            overflowY: "auto",
-                                            paddingRight: "4px",
-                                        }}
-                                    >
+                                    <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                                         {displayedOptions.map((opt) => {
                                             const isSelected = opt.product.id === currentWizardItem.selectedProductId;
 
@@ -754,35 +657,25 @@ export default function RequirementWizard({
                                                 <div
                                                     key={opt.product.id}
                                                     onClick={() => handleSelectOption(opt.product.id)}
-                                                    style={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        gap: "12px",
-                                                        padding: "12px 16px",
-                                                        borderRadius: "10px",
-                                                        background: isSelected ? "rgba(59, 130, 246, 0.08)" : "var(--muted-bg)",
-                                                        border: isSelected ? "2px solid var(--accent)" : "1px solid var(--border)",
-                                                        cursor: "pointer",
-                                                        transition: "all 0.15s ease",
-                                                    }}
+                                                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                                                        isSelected
+                                                            ? "bg-blue-600/10 border-blue-600 ring-1 ring-blue-600/20"
+                                                            : "bg-muted-bg/50 border-border hover:bg-muted-bg"
+                                                    }`}
                                                 >
                                                     {/* Selection Radio Indicator */}
                                                     <div
-                                                        style={{
-                                                            width: "20px",
-                                                            height: "20px",
-                                                            borderRadius: "50%",
-                                                            border: isSelected ? "6px solid var(--accent)" : "2px solid var(--border)",
-                                                            background: "var(--card)",
-                                                            flexShrink: 0,
-                                                            transition: "all 0.15s ease",
-                                                        }}
-                                                    />
+                                                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                                                            isSelected ? "border-blue-600 bg-blue-600" : "border-border bg-card"
+                                                        }`}
+                                                    >
+                                                        {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                                    </div>
 
                                                     {/* Model Details */}
-                                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                                        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px", flexWrap: "wrap" }}>
-                                                            <span style={{ fontWeight: 700, fontSize: "14px", color: "var(--foreground)" }}>
+                                                    <div className="flex-1 min-w-0 space-y-1">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            <span className="font-bold text-xs text-foreground font-mono">
                                                                 {opt.product.productCode}
                                                             </span>
                                                             <span className="badge badge-blue">
@@ -796,43 +689,27 @@ export default function RequirementWizard({
                                                                 {Math.round(opt.score * 100)}% Match
                                                             </span>
                                                             {opt.specDetails && (
-                                                                <span
-                                                                    style={{
-                                                                        fontSize: "11px",
-                                                                        background: "rgba(34, 197, 94, 0.12)",
-                                                                        color: "var(--success)",
-                                                                        padding: "2px 6px",
-                                                                        borderRadius: "4px",
-                                                                        fontWeight: 500,
-                                                                    }}
-                                                                >
+                                                                <span className="text-[11px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded font-medium">
                                                                     ⚡ {opt.specDetails}
                                                                 </span>
                                                             )}
                                                         </div>
-                                                        <div
-                                                            style={{
-                                                                fontSize: "12px",
-                                                                color: "var(--muted)",
-                                                                overflow: "hidden",
-                                                                textOverflow: "ellipsis",
-                                                                whiteSpace: "nowrap",
-                                                            }}
-                                                        >
+                                                        <div className="text-xs text-muted truncate">
                                                             {opt.product.description}
                                                         </div>
                                                     </div>
 
                                                     {/* Price Details */}
-                                                    <div style={{ textAlign: "right", whiteSpace: "nowrap", flexShrink: 0 }}>
+                                                    <div className="text-right whitespace-nowrap shrink-0">
                                                         {(opt as any).isDirectRequirement ? (
-                                                            <div onClick={(e) => e.stopPropagation()} style={{ textAlign: "right" }}>
-                                                                <div style={{ fontSize: "11px", color: "var(--muted)", marginBottom: "2px" }}>
+                                                            <div onClick={(e) => e.stopPropagation()} className="space-y-1">
+                                                                <label htmlFor={`direct-price-${opt.product.id}`} className="text-[11px] text-muted block">
                                                                     Unit Price (PKR)
-                                                                </div>
-                                                                <div style={{ display: "flex", alignItems: "center", gap: "4px", justifyContent: "flex-end" }}>
-                                                                    <span style={{ fontSize: "12px", color: "var(--muted)" }}>PKR</span>
+                                                                </label>
+                                                                <div className="flex items-center gap-1 justify-end">
+                                                                    <span className="text-xs text-muted">PKR</span>
                                                                     <input
+                                                                        id={`direct-price-${opt.product.id}`}
                                                                         type="number"
                                                                         min="0"
                                                                         value={opt.product.netCost || ""}
@@ -841,29 +718,19 @@ export default function RequirementWizard({
                                                                             handleUpdateOptionPrice(opt.product.id, val);
                                                                         }}
                                                                         placeholder="0"
-                                                                        style={{
-                                                                            width: "110px",
-                                                                            padding: "4px 8px",
-                                                                            borderRadius: "6px",
-                                                                            background: "var(--card)",
-                                                                            border: "1.5px solid var(--accent)",
-                                                                            color: "var(--foreground)",
-                                                                            fontWeight: 700,
-                                                                            fontSize: "13px",
-                                                                            textAlign: "right",
-                                                                        }}
+                                                                        className="w-24 px-2 py-1 rounded bg-card border border-blue-600 text-foreground font-bold text-xs text-right outline-none"
                                                                     />
                                                                 </div>
                                                             </div>
                                                         ) : (
                                                             <>
-                                                                <div style={{ fontSize: "11px", color: "var(--muted)", textDecoration: "line-through" }}>
+                                                                <div className="text-xs text-muted line-through">
                                                                     {formatCurrency(opt.product.listPrice, currency)}
                                                                 </div>
-                                                                <div style={{ fontWeight: 700, fontSize: "14px", color: "var(--success)" }}>
+                                                                <div className="font-bold text-sm text-emerald-600 dark:text-emerald-400">
                                                                     {formatCurrency(opt.product.netCost, currency)}
                                                                 </div>
-                                                                <div style={{ fontSize: "11px", color: "var(--muted)" }}>
+                                                                <div className="text-[11px] text-muted">
                                                                     Disc: {formatPercent(opt.product.discount)}
                                                                 </div>
                                                             </>
@@ -881,17 +748,8 @@ export default function RequirementWizard({
 
                 {/* Footer Controls */}
                 {!isCompleted && currentWizardItem && (
-                    <div
-                        style={{
-                            padding: "16px 24px",
-                            borderTop: "1px solid var(--border)",
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            background: "var(--card)",
-                        }}
-                    >
-                        <div style={{ display: "flex", gap: "8px" }}>
+                    <div className="px-6 py-4 border-t border-border flex items-center justify-between bg-card shrink-0">
+                        <div className="flex items-center gap-2">
                             <button
                                 type="button"
                                 className="btn-ghost btn-sm"
@@ -909,16 +767,15 @@ export default function RequirementWizard({
                             </button>
                         </div>
 
-                        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                            <span style={{ fontSize: "12px", color: "var(--muted)" }}>
+                        <div className="flex items-center gap-3">
+                            <span className="text-xs text-muted hidden sm:inline">
                                 {selectedProduct ? `Selected: ${selectedProduct.productCode}` : "Select a model option"}
                             </span>
                             <button
                                 type="button"
-                                className="btn-primary"
+                                className="btn-primary btn-sm"
                                 onClick={handleConfirmAndNext}
                                 disabled={!selectedProduct}
-                                style={{ padding: "8px 20px" }}
                             >
                                 ✅ Confirm & Next {currentIndex < totalItems - 1 ? `(Item ${currentIndex + 2} →)` : "(Finish)"}
                             </button>

@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
             mappings,
             brand,
             priceListId,
-            currency = "AUD",
+            currency = "PKR",
             priceListVersion,
         } = body as {
             rows: Record<string, string>[];

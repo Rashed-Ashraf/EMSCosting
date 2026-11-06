@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useEmsStore, useHasHydrated } from "@/stores/appStore";
 import { searchProducts } from "@/lib/search/productSearch";
 import { matchBlindQuotation, parseElectricalQuery } from "@/lib/search/blindQuotation";
+import { matchPriceListItems, type MatchResult } from "@/lib/matching-engine";
 import { formatCurrency, formatPercent } from "@/lib/calculations";
 import { nanoid, formatDate, formatDateDisplay, isValidBrandName } from "@/lib/utils";
 import type { Product, SearchResult, CostingItem, BOQItem } from "@/lib/types";
@@ -22,7 +23,7 @@ export default function CostingPage() {
 
     const [searchQuery, setSearchQuery] = useState("");
     const [brandFilter, setBrandFilter] = useState<string>("all");
-    const [searchResults, setSearchResults] = useState<(SearchResult & { specDetails?: string })[]>([]);
+    const [searchResults, setSearchResults] = useState<MatchResult[]>([]);
     const [searching, setSearching] = useState(false);
     const [showNewWarning, setShowNewWarning] = useState(false);
     const [showQuotation, setShowQuotation] = useState(false);
@@ -64,7 +65,9 @@ export default function CostingPage() {
             setSearchResults(
                 brandProds.slice(0, 30).map((product) => ({
                     product,
-                    score: 1,
+                    score: 1.0,
+                    confidence: 100,
+                    matchLabel: "100% Match",
                     matchType: "exact" as const,
                 }))
             );
@@ -73,55 +76,19 @@ export default function CostingPage() {
         }
     }, [brandFilter, searchQuery, products]);
 
-    // Debounced search with Blind Quotation & Spec support
+    // Debounced search with advanced Fuse.js and electrical synonym matching engine
     useEffect(() => {
         if (!searchQuery.trim()) return;
         clearTimeout(searchTimer.current!);
         setSearching(true);
         searchTimer.current = setTimeout(() => {
-            // First perform standard search
-            const standardResults = searchProducts(searchQuery, products, 30);
-
-            // Also perform Blind Spec matching (for Brand + Readings queries like "Schneider 250A 3P 36kA")
-            const blindResults = matchBlindQuotation(searchQuery, products, 20);
-
-            // Merge results without duplicates, prioritizing high blind matches if relevant
-            const seenIds = new Set<string>();
-            const merged: (SearchResult & { specDetails?: string })[] = [];
-
-            // Add high-confidence blind results first if query has electrical readings
-            const spec = parseElectricalQuery(searchQuery);
-            const hasElectricalSpec = spec.currentNumeric || spec.poles || spec.breakingCapacityNumeric || spec.componentType;
-
-            if (hasElectricalSpec && blindResults.length > 0) {
-                for (const br of blindResults) {
-                    if (!seenIds.has(br.product.id)) {
-                        seenIds.add(br.product.id);
-                        merged.push({
-                            product: br.product,
-                            score: br.score,
-                            matchType: br.score >= 0.8 ? "exact" : "fuzzy",
-                            specDetails: br.matchedSpecsSummary,
-                        });
-                    }
-                }
-            }
-
-            // Then append standard results
-            for (const sr of standardResults) {
-                if (!seenIds.has(sr.product.id)) {
-                    seenIds.add(sr.product.id);
-                    merged.push(sr);
-                }
-            }
-
-            const filteredMerged = brandFilter === "all"
-                ? merged
-                : merged.filter((r) => r.product.brand.toLowerCase() === brandFilter.toLowerCase());
-
-            setSearchResults(filteredMerged.slice(0, 35));
+            const matches = matchPriceListItems(searchQuery, products, {
+                brand: brandFilter,
+                limit: 35,
+            });
+            setSearchResults(matches);
             setSearching(false);
-        }, 250);
+        }, 200);
         return () => clearTimeout(searchTimer.current!);
     }, [searchQuery, products, brandFilter]);
 
@@ -226,23 +193,32 @@ export default function CostingPage() {
     }
 
     return (
-        <div style={{ padding: "28px 32px", maxWidth: "100%" }}>
+        <div className="p-6 sm:p-8 space-y-6 max-w-7xl mx-auto">
             {toast && <div className="toast" style={{ borderLeft: "3px solid var(--success)" }}>{toast}</div>}
 
             {/* Warning Modal */}
             {showNewWarning && (
                 <Modal onClose={() => setShowNewWarning(false)}>
-                    <div style={{ padding: "24px", maxWidth: "420px" }}>
-                        <h3 style={{ fontWeight: 700, fontSize: "16px", marginBottom: "10px" }}>⚠️ Start New Costing?</h3>
-                        <p style={{ color: "var(--muted)", fontSize: "14px", marginBottom: "20px" }}>
+                    <div className="p-6 space-y-4 max-w-md">
+                        <h3 className="text-base font-bold text-foreground">⚠️ Start New Costing?</h3>
+                        <p className="text-sm text-muted">
                             Starting a new costing will clear all {items.length} current items. Download your files first.
                         </p>
-                        <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-                            <button className="btn-ghost" onClick={() => setShowNewWarning(false)}>Cancel</button>
-                            <button className="btn-primary" onClick={handleDownloadExcel} disabled={downloading}>
+                        <div className="flex items-center justify-end gap-2.5 pt-2">
+                            <button type="button" className="btn-ghost" onClick={() => setShowNewWarning(false)}>
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                className="btn-primary"
+                                onClick={handleDownloadExcel}
+                                disabled={downloading}
+                            >
                                 {downloading ? "Downloading…" : "📊 Download First"}
                             </button>
-                            <button className="btn-danger" onClick={confirmNewCosting}>Clear & New</button>
+                            <button type="button" className="btn-danger" onClick={confirmNewCosting}>
+                                Clear & New
+                            </button>
                         </div>
                     </div>
                 </Modal>
@@ -267,26 +243,29 @@ export default function CostingPage() {
                 />
             )}
 
-            <div className="page-header">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/60">
                 <div>
-                    <h1 className="section-title" style={{ fontSize: "22px" }}>🧮 New Costing</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                        <span>🧮</span>
+                        <span>New Costing</span>
+                    </h1>
                     {products.length === 0 && (
-                        <p style={{ color: "var(--warning)", fontSize: "13px", marginTop: "4px" }}>
-                            ⚠️ No products loaded. <a href="/price-lists" style={{ color: "var(--accent)" }}>Upload a price list first →</a>
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1.5">
+                            <span>⚠️</span>
+                            <span>No products loaded.</span>
+                            <Link href="/price-lists" className="text-accent hover:underline font-semibold">
+                                Upload a price list first →
+                            </Link>
                         </p>
                     )}
                 </div>
-                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                    <button className="btn-ghost btn-sm" onClick={handleNewCosting}>🔄 New</button>
+                <div className="flex items-center gap-2 flex-wrap">
+                    <button type="button" className="btn-ghost btn-sm" onClick={handleNewCosting}>
+                        🔄 New
+                    </button>
                     <button
+                        type="button"
                         className="btn-primary btn-sm"
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            background: "linear-gradient(135deg, #2563eb, #3b82f6)",
-                            border: "none",
-                        }}
                         onClick={() => {
                             if (requirementItems.length > 0) {
                                 setWizardOpen(true);
@@ -296,56 +275,105 @@ export default function CostingPage() {
                             }
                         }}
                     >
-                        📥 Upload Requirement
-                    </button>
-                    <button className="btn-secondary" onClick={handleDownloadExcel} disabled={downloading || items.length === 0}>
-                        📊 Download Excel
+                        <span>📥</span>
+                        <span>Upload Requirement</span>
                     </button>
                     <button
-                        className="btn-primary"
+                        type="button"
+                        className="btn-secondary btn-sm"
+                        onClick={handleDownloadExcel}
+                        disabled={downloading || items.length === 0}
+                    >
+                        <span>📊</span>
+                        <span>Download Excel</span>
+                    </button>
+                    <button
+                        type="button"
+                        className="btn-primary btn-sm"
                         onClick={() => setShowQuotation(true)}
                         disabled={items.length === 0}
                     >
-                        📄 Generate Quotation
+                        <span>📄</span>
+                        <span>Generate Quotation</span>
                     </button>
                 </div>
             </div>
 
             {/* Project Header */}
-            <div className="card" style={{ marginBottom: "20px" }}>
-                <div style={{ fontWeight: 600, fontSize: "14px", marginBottom: "14px", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            <div className="card space-y-4">
+                <div className="text-xs font-bold uppercase tracking-wider text-muted">
                     Project Details
                 </div>
-                <div className="grid-3" style={{ gap: "12px" }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="form-group">
-                        <label className="label">Customer Name</label>
-                        <input className="input" value={header?.customerName ?? ""} onChange={(e) => updateHeader({ customerName: e.target.value })} placeholder="Customer name" />
+                        <label htmlFor="costing-customer-name" className="label">Customer Name</label>
+                        <input
+                            id="costing-customer-name"
+                            className="input"
+                            value={header?.customerName ?? ""}
+                            onChange={(e) => updateHeader({ customerName: e.target.value })}
+                            placeholder="Customer name"
+                        />
                     </div>
                     <div className="form-group">
-                        <label className="label">Company</label>
-                        <input className="input" value={header?.company ?? ""} onChange={(e) => updateHeader({ company: e.target.value })} placeholder="Company" />
+                        <label htmlFor="costing-company-name" className="label">Company</label>
+                        <input
+                            id="costing-company-name"
+                            className="input"
+                            value={header?.company ?? ""}
+                            onChange={(e) => updateHeader({ company: e.target.value })}
+                            placeholder="Company"
+                        />
                     </div>
                     <div className="form-group">
-                        <label className="label">Project</label>
-                        <input className="input" value={header?.project ?? ""} onChange={(e) => updateHeader({ project: e.target.value })} placeholder="Project name" />
+                        <label htmlFor="costing-project-name" className="label">Project</label>
+                        <input
+                            id="costing-project-name"
+                            className="input"
+                            value={header?.project ?? ""}
+                            onChange={(e) => updateHeader({ project: e.target.value })}
+                            placeholder="Project name"
+                        />
                     </div>
                     <div className="form-group">
-                        <label className="label">Reference</label>
-                        <input className="input" value={header?.reference ?? ""} onChange={(e) => updateHeader({ reference: e.target.value })} placeholder="e.g. RFQ-2026-001" />
+                        <label htmlFor="costing-reference" className="label">Reference</label>
+                        <input
+                            id="costing-reference"
+                            className="input"
+                            value={header?.reference ?? ""}
+                            onChange={(e) => updateHeader({ reference: e.target.value })}
+                            placeholder="e.g. RFQ-2026-001"
+                        />
                     </div>
                     <div className="form-group">
-                        <label className="label">Date</label>
-                        <input className="input" type="date" value={header?.date ?? formatDate()} onChange={(e) => updateHeader({ date: e.target.value })} />
+                        <label htmlFor="costing-date" className="label">Date</label>
+                        <input
+                            id="costing-date"
+                            className="input"
+                            type="date"
+                            value={header?.date ?? formatDate()}
+                            onChange={(e) => updateHeader({ date: e.target.value })}
+                        />
                     </div>
                     <div className="form-group">
-                        <label className="label">Currency</label>
-                        <select className="select" value={header?.currency ?? "PKR"} onChange={(e) => updateHeader({ currency: e.target.value })}>
+                        <label htmlFor="costing-currency" className="label">Currency</label>
+                        <select
+                            id="costing-currency"
+                            className="select"
+                            value={header?.currency ?? "PKR"}
+                            onChange={(e) => updateHeader({ currency: e.target.value })}
+                        >
                             {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
                     <div className="form-group">
-                        <label className="label">GST / Sales Tax</label>
-                        <select className="select" value={header?.gstRate ?? 0.18} onChange={(e) => updateHeader({ gstRate: parseFloat(e.target.value) })}>
+                        <label htmlFor="costing-gst-rate" className="label">GST / Sales Tax</label>
+                        <select
+                            id="costing-gst-rate"
+                            className="select"
+                            value={header?.gstRate ?? 0.18}
+                            onChange={(e) => updateHeader({ gstRate: parseFloat(e.target.value) })}
+                        >
                             <option value={0.18}>18% (Pakistan Standard)</option>
                             <option value={0.17}>17% (Pakistan Prior)</option>
                             <option value={0}>0% (No GST / Exempt)</option>
@@ -353,33 +381,39 @@ export default function CostingPage() {
                             <option value={0.1}>10%</option>
                         </select>
                     </div>
-                    <div className="form-group" style={{ gridColumn: "span 2" }}>
-                        <label className="label">Notes</label>
-                        <input className="input" value={header?.notes ?? ""} onChange={(e) => updateHeader({ notes: e.target.value })} placeholder="Optional notes" />
+                    <div className="form-group sm:col-span-2">
+                        <label htmlFor="costing-notes" className="label">Notes</label>
+                        <input
+                            id="costing-notes"
+                            className="input"
+                            value={header?.notes ?? ""}
+                            onChange={(e) => updateHeader({ notes: e.target.value })}
+                            placeholder="Optional notes"
+                        />
                     </div>
                 </div>
             </div>
 
             {/* Requirement File Upload & Guided Review */}
-            <div className="card" style={{ marginBottom: "20px", border: "1px solid rgba(59, 130, 246, 0.25)", background: "linear-gradient(180deg, rgba(59, 130, 246, 0.03) 0%, transparent 100%)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "10px" }}>
+            <div className="card border border-blue-500/25 bg-blue-50/30 dark:bg-blue-950/20 space-y-3.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                        <div style={{ fontWeight: 600, fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+                        <div className="font-semibold text-sm flex items-center gap-2">
                             <span>📋 Requirement / BOQ Document Upload</span>
-                            <span className="badge badge-blue" style={{ fontSize: "11px" }}>Excel · PDF · Images</span>
+                            <span className="badge badge-blue text-[11px]">Excel · PDF · Images</span>
                         </div>
-                        <p style={{ fontSize: "12px", color: "var(--muted)", marginTop: "4px" }}>
+                        <p className="text-xs text-muted mt-1">
                             Upload any requirement file (spreadsheet, drawing, or photo). System checks models or parses category (MCB, MCCB, ACB), readings (40A, 50A, 3P), and brand, then asks for confirmation on each selected option.
                         </p>
                     </div>
                     {requirementItems.length > 0 && (
                         <button
                             type="button"
-                            className="btn-primary btn-sm"
+                            className="btn-primary btn-sm shrink-0"
                             onClick={() => setWizardOpen(true)}
-                            style={{ display: "flex", alignItems: "center", gap: "6px" }}
                         >
-                            ⚡ Review Items ({requirementItems.length})
+                            <span>⚡</span>
+                            <span>Review Items ({requirementItems.length})</span>
                         </button>
                     )}
                 </div>
@@ -405,38 +439,38 @@ export default function CostingPage() {
             )}
 
             {/* Product Search */}
-            <div className="card" style={{ marginBottom: "20px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-                    <div style={{ fontWeight: 600, fontSize: "14px", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            <div className="card space-y-4">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div className="text-xs font-bold uppercase tracking-wider text-muted">
                         Search & Add Products
                     </div>
                     <Link
                         href="/blind-quotation"
                         className="btn-secondary btn-sm"
-                        style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px" }}
                     >
-                        ⚡ Blind Spec Finder (No Model #)
+                        <span>⚡</span>
+                        <span>Blind Spec Finder (No Model #)</span>
                     </Link>
                 </div>
-                <div style={{ position: "relative", marginBottom: "12px" }}>
+                <div className="relative">
+                    <label htmlFor="costing-product-search" className="sr-only">Search products</label>
                     <input
-                        className="input"
-                        style={{ paddingLeft: "36px", fontSize: "15px", height: "44px" }}
+                        id="costing-product-search"
+                        className="input pl-9 h-11 text-sm"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search: 250A MCCB · Schneider · ABB 4 pole · MCB 32A · LV431630..."
                     />
-                    <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }}>🔍</span>
-                    {searching && <div className="spinner" style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)" }} />}
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">🔍</span>
+                    {searching && <div className="spinner absolute right-3 top-1/2 -translate-y-1/2" />}
                 </div>
 
                 {availableBrands.length > 0 && (
-                    <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "14px", alignItems: "center" }}>
-                        <span style={{ fontSize: "11px", color: "var(--muted)", marginRight: "2px" }}>Filter Brand:</span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[11px] font-medium text-muted mr-1">Filter Brand:</span>
                         <button
                             type="button"
-                            className={brandFilter === "all" ? "badge badge-blue" : "badge badge-gray"}
-                            style={{ cursor: "pointer", border: "none", padding: "4px 8px" }}
+                            className={brandFilter === "all" ? "badge badge-blue cursor-pointer" : "badge badge-gray cursor-pointer"}
                             onClick={() => setBrandFilter("all")}
                         >
                             All Brands
@@ -445,8 +479,7 @@ export default function CostingPage() {
                             <button
                                 key={b}
                                 type="button"
-                                className={brandFilter.toLowerCase() === b.toLowerCase() ? "badge badge-blue" : "badge badge-gray"}
-                                style={{ cursor: "pointer", border: "none", padding: "4px 8px" }}
+                                className={brandFilter.toLowerCase() === b.toLowerCase() ? "badge badge-blue cursor-pointer" : "badge badge-gray cursor-pointer"}
                                 onClick={() => setBrandFilter(brandFilter.toLowerCase() === b.toLowerCase() ? "all" : b)}
                             >
                                 {b}
@@ -454,36 +487,57 @@ export default function CostingPage() {
                         ))}
                     </div>
                 )}
+
+                {searching && (
+                    <div className="space-y-2 pt-1">
+                        <div className="h-14 rounded-xl animate-pulse bg-muted-bg border border-border/60" />
+                        <div className="h-14 rounded-xl animate-pulse bg-muted-bg border border-border/60" />
+                    </div>
+                )}
+
                 {products.length === 0 && (
-                    <div style={{ textAlign: "center", padding: "24px", color: "var(--muted)", fontSize: "13px" }}>
+                    <div className="text-center py-6 text-muted text-xs">
                         No products indexed. Upload a price list first.
                     </div>
                 )}
-                {searchResults.length > 0 && (
-                    <div style={{ maxHeight: "320px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "6px" }}>
+
+                {!searching && searchResults.length > 0 && (
+                    <div className="max-h-80 overflow-y-auto flex flex-col gap-2 pr-1">
                         {searchResults.map((r) => (
-                            <ProductResultCard key={r.product.id} result={r} currency={curr} onAdd={() => {
-                                addItemToCosting(r.product);
-                                showToast(`✅ ${r.product.productCode} added`);
-                            }} />
+                            <ProductResultCard
+                                key={r.product.id}
+                                result={r}
+                                currency={curr}
+                                onAdd={() => {
+                                    addItemToCosting(r.product);
+                                    showToast(`✅ ${r.product.productCode} added`);
+                                }}
+                            />
                         ))}
                     </div>
                 )}
+
                 {searchQuery && !searching && searchResults.length === 0 && (
-                    <div style={{ textAlign: "center", padding: "16px", color: "var(--muted)", fontSize: "13px" }}>
-                        No products found for "{searchQuery}". Try the <Link href="/blind-quotation" style={{ color: "var(--accent)" }}>⚡ Blind Quotation Finder</Link> to search by electrical readings.
+                    <div className="text-center py-4 text-muted text-xs">
+                        No products found for "{searchQuery}". Try the{" "}
+                        <Link href="/blind-quotation" className="text-accent hover:underline font-semibold">
+                            ⚡ Blind Quotation Finder
+                        </Link>{" "}
+                        to search by electrical readings.
                     </div>
                 )}
             </div>
 
             {/* Costing Table */}
-            <div className="card">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-                    <div style={{ fontWeight: 600, fontSize: "14px", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            <div className="card space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                    <div className="text-xs font-bold uppercase tracking-wider text-muted">
                         Costing Items ({items.length})
                     </div>
                     {items.length > 0 && (
-                        <span className="badge badge-blue">{curr} {totals ? new Intl.NumberFormat().format(totals.grandTotal) : 0} incl. GST</span>
+                        <span className="badge badge-blue font-semibold">
+                            {curr} {totals ? new Intl.NumberFormat().format(totals.grandTotal) : 0} incl. GST
+                        </span>
                     )}
                 </div>
 
@@ -493,23 +547,23 @@ export default function CostingPage() {
                     </div>
                 ) : (
                     <>
-                        <div className="table-container">
-                            <table>
-                                <thead>
+                        <div className="table-container rounded-xl border border-border shadow-2xs overflow-x-auto">
+                            <table className="w-full border-collapse">
+                                <thead className="sticky top-0 bg-muted-bg z-10 border-b border-border shadow-2xs">
                                     <tr>
-                                        <th className="sticky left-0 z-20 bg-muted-bg text-center w-10 shadow-[1px_0_0_0_var(--border)]">#</th>
-                                        <th>Product Code</th>
-                                        <th>Brand</th>
-                                        <th>Description</th>
-                                        <th>Qty</th>
-                                        <th>List Price</th>
-                                        <th>Discount</th>
-                                        <th>Net Cost</th>
-                                        <th>Margin</th>
-                                        <th>Selling Price</th>
-                                        <th>Total Cost</th>
-                                        <th>Total Selling</th>
-                                        <th></th>
+                                        <th className="sticky left-0 z-20 bg-muted-bg text-center w-12 px-4 py-3 shadow-[1px_0_0_0_var(--border)]">#</th>
+                                        <th className="px-4 py-3">Product Code</th>
+                                        <th className="px-4 py-3">Brand</th>
+                                        <th className="px-4 py-3">Description</th>
+                                        <th className="px-4 py-3">Qty</th>
+                                        <th className="px-4 py-3">List Price</th>
+                                        <th className="px-4 py-3">Discount</th>
+                                        <th className="px-4 py-3">Net Cost</th>
+                                        <th className="px-4 py-3">Margin</th>
+                                        <th className="px-4 py-3">Selling Price</th>
+                                        <th className="px-4 py-3">Total Cost</th>
+                                        <th className="px-4 py-3">Total Selling</th>
+                                        <th className="px-4 py-3 text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -539,7 +593,7 @@ export default function CostingPage() {
                                     <span className="font-medium text-foreground">{formatCurrency(totals?.subtotalSelling ?? 0, curr)}</span>
                                 </div>
                                 <div className="flex justify-between text-xs sm:text-sm">
-                                    <span className="text-muted">GST ({Math.round((header?.gstRate ?? 0.1) * 100)}%)</span>
+                                    <span className="text-muted">GST ({Math.round((header?.gstRate ?? 0.18) * 100)}%)</span>
                                     <span className="font-medium text-foreground">{formatCurrency(totals?.gstAmount ?? 0, curr)}</span>
                                 </div>
                                 <hr className="divider my-2" />
@@ -559,16 +613,33 @@ export default function CostingPage() {
     );
 }
 
-function ProductResultCard({ result, currency, onAdd }: { result: SearchResult & { specDetails?: string }; currency: string; onAdd: () => void }) {
-    const { product, score, matchType, specDetails } = result;
+function ProductResultCard({
+    result,
+    currency,
+    onAdd,
+}: {
+    result: MatchResult;
+    currency: string;
+    onAdd: () => void;
+}) {
+    const { product, confidence, matchLabel, specDetails } = result;
+
+    // Badge color coding based on match confidence
+    const badgeColorClass =
+        confidence >= 90
+            ? "badge-green"
+            : confidence >= 75
+            ? "badge-blue"
+            : "badge-yellow";
+
     return (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted-bg/60 rounded-xl p-3 border border-border/80 hover:border-accent/40 transition-colors">
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="badge badge-blue">{product.brand}</span>
                     <span className="font-semibold text-xs text-foreground">{product.productCode}</span>
-                    <span className={`badge ${matchType === "exact" ? "badge-green" : matchType === "partial" ? "badge-blue" : "badge-gray"}`}>
-                        {Math.round(score * 100)}% {matchType}
+                    <span className={`badge font-bold text-[11px] ${badgeColorClass}`}>
+                        {matchLabel || `${confidence}% Match`}
                     </span>
                     {specDetails && (
                         <span className="text-[11px] bg-emerald-500/10 text-success border border-success/20 px-1.5 py-0.5 rounded-sm font-medium">
@@ -600,46 +671,56 @@ function CostingRow({ item, index, currency, onUpdate, onRemove }: {
     onRemove: () => void;
 }) {
     return (
-        <tr className="hover:bg-muted-bg/50 transition-colors">
-            <td className="sticky left-0 z-10 bg-card-bg text-center text-xs font-semibold text-muted shadow-[1px_0_0_0_var(--border)]">{index + 1}</td>
-            <td className="font-semibold text-xs whitespace-nowrap text-foreground">{item.product.productCode}</td>
-            <td><span className="badge badge-blue">{item.product.brand}</span></td>
-            <td className="max-w-[200px] truncate text-xs text-foreground">
+        <tr className="hover:bg-muted-bg/50 transition-colors border-b border-border/50">
+            <td className="sticky left-0 z-10 bg-card-bg text-center text-xs font-semibold text-muted px-4 py-3 shadow-[1px_0_0_0_var(--border)]">{index + 1}</td>
+            <td className="font-semibold text-xs whitespace-nowrap text-foreground px-4 py-3">{item.product.productCode}</td>
+            <td className="px-4 py-3"><span className="badge badge-blue">{item.product.brand}</span></td>
+            <td className="max-w-[220px] truncate text-xs text-foreground px-4 py-3">
                 {item.customDescription || item.product.description}
             </td>
-            <td>
+            <td className="px-4 py-3">
                 <input
                     type="number" min="1"
-                    className="w-16 bg-input-bg border border-input-border rounded-md text-foreground px-1.5 py-1 text-xs focus:border-accent outline-none"
+                    aria-label={`Quantity for ${item.product.productCode}`}
+                    className="w-16 bg-input-bg border border-input-border rounded-md text-foreground px-2 py-1 text-xs focus:border-accent outline-none"
                     value={item.qty}
                     onChange={(e) => onUpdate({ qty: Math.max(1, parseInt(e.target.value) || 1) })}
                 />
             </td>
-            <td className="text-xs text-foreground whitespace-nowrap">{formatCurrency(item.listPrice, currency)}</td>
-            <td className="whitespace-nowrap">
+            <td className="text-xs text-foreground whitespace-nowrap px-4 py-3">{formatCurrency(item.listPrice, currency)}</td>
+            <td className="whitespace-nowrap px-4 py-3">
                 <input
                     type="number" min="0" max="100" step="0.5"
-                    className="w-16 bg-input-bg border border-input-border rounded-md text-foreground px-1.5 py-1 text-xs focus:border-accent outline-none"
+                    aria-label={`Discount for ${item.product.productCode}`}
+                    className="w-16 bg-input-bg border border-input-border rounded-md text-foreground px-2 py-1 text-xs focus:border-accent outline-none"
                     value={Math.round(item.discount * 100)}
                     onChange={(e) => onUpdate({ discount: Math.min(1, Math.max(0, parseFloat(e.target.value) / 100 || 0)) })}
                 />
-                <span className="text-[11px] text-muted ml-1">%</span>
+                <span className="text-[11px] text-muted ml-1 font-medium">%</span>
             </td>
-            <td className="font-semibold text-xs text-success whitespace-nowrap">{formatCurrency(item.netCost, currency)}</td>
-            <td className="whitespace-nowrap">
+            <td className="font-semibold text-xs text-success whitespace-nowrap px-4 py-3">{formatCurrency(item.netCost, currency)}</td>
+            <td className="whitespace-nowrap px-4 py-3">
                 <input
                     type="number" min="0" max="200" step="0.5"
-                    className="w-16 bg-input-bg border border-input-border rounded-md text-foreground px-1.5 py-1 text-xs focus:border-accent outline-none"
+                    aria-label={`Margin for ${item.product.productCode}`}
+                    className="w-16 bg-input-bg border border-input-border rounded-md text-foreground px-2 py-1 text-xs focus:border-accent outline-none"
                     value={Math.round(item.margin * 100)}
                     onChange={(e) => onUpdate({ margin: Math.max(0, parseFloat(e.target.value) / 100 || 0) })}
                 />
-                <span className="text-[11px] text-muted ml-1">%</span>
+                <span className="text-[11px] text-muted ml-1 font-medium">%</span>
             </td>
-            <td className="text-xs text-foreground whitespace-nowrap">{formatCurrency(item.sellingPrice, currency)}</td>
-            <td className="text-xs text-muted whitespace-nowrap">{formatCurrency(item.totalCost, currency)}</td>
-            <td className="font-bold text-xs text-accent whitespace-nowrap">{formatCurrency(item.totalSelling, currency)}</td>
-            <td className="text-center">
-                <button className="btn-danger btn-sm px-2 py-1" onClick={onRemove}>✕</button>
+            <td className="text-xs text-foreground whitespace-nowrap px-4 py-3">{formatCurrency(item.sellingPrice, currency)}</td>
+            <td className="text-xs text-muted whitespace-nowrap px-4 py-3">{formatCurrency(item.totalCost, currency)}</td>
+            <td className="font-bold text-xs text-accent whitespace-nowrap px-4 py-3">{formatCurrency(item.totalSelling, currency)}</td>
+            <td className="text-center px-4 py-3">
+                <button
+                    type="button"
+                    aria-label={`Remove ${item.product.productCode}`}
+                    className="btn-danger btn-sm px-2.5 py-1"
+                    onClick={onRemove}
+                >
+                    ✕
+                </button>
             </td>
         </tr>
     );
@@ -698,127 +779,183 @@ function QuotationStep({ onBack }: { onBack: () => void }) {
         } finally { setDownloadingPDF(false); }
     };
 
-    const curr = costingSession?.header.currency ?? "AUD";
+    const curr = costingSession?.header.currency ?? "PKR";
     const items = costingSession?.items ?? [];
     const totals = costingSession?.totals;
 
     return (
-        <div style={{ padding: "28px 32px" }}>
+        <div className="p-6 sm:p-8 space-y-6 max-w-7xl mx-auto">
             {toast && <div className="toast" style={{ borderLeft: "3px solid var(--success)" }}>{toast}</div>}
-            <div className="page-header">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/60">
                 <div>
-                    <button className="btn-ghost btn-sm" onClick={onBack} style={{ marginBottom: "8px" }}>← Back to Costing</button>
-                    <h1 className="section-title" style={{ fontSize: "22px" }}>📄 Generate Quotation</h1>
+                    <button type="button" className="btn-ghost btn-sm mb-2" onClick={onBack}>
+                        ← Back to Costing
+                    </button>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                        <span>📄</span>
+                        <span>Generate Quotation</span>
+                    </h1>
                 </div>
-                <div style={{ display: "flex", gap: "8px" }}>
+                <div className="flex items-center gap-2">
                     {generated && (
-                        <>
-                            <button className="btn-primary" onClick={handleDownloadPDF} disabled={downloadingPDF}>
-                                {downloadingPDF ? "Opening…" : "📄 Download PDF"}
-                            </button>
-                        </>
+                        <button
+                            type="button"
+                            className="btn-primary"
+                            onClick={handleDownloadPDF}
+                            disabled={downloadingPDF}
+                        >
+                            {downloadingPDF ? "Opening…" : "📄 Download PDF"}
+                        </button>
                     )}
                 </div>
             </div>
 
-            <div className="grid-2" style={{ gap: "20px", marginBottom: "20px" }}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Customer Details */}
-                <div className="card">
-                    <div style={{ fontWeight: 600, fontSize: "14px", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "14px" }}>Customer Details</div>
+                <div className="card space-y-4">
+                    <div className="text-xs font-bold uppercase tracking-wider text-muted">
+                        Customer Details
+                    </div>
                     {[
-                        { key: "customerName", label: "Customer Name", placeholder: "John Smith" },
-                        { key: "company", label: "Company", placeholder: "ABC Electrical Contractors" },
-                        { key: "address", label: "Address", placeholder: "123 Main St, Sydney NSW 2000" },
-                        { key: "phone", label: "Phone", placeholder: "+61 2 1234 5678" },
-                        { key: "email", label: "Email", placeholder: "john@abcelectrical.com.au" },
-                    ].map(({ key, label, placeholder }) => (
-                        <div key={key} className="form-group" style={{ marginBottom: "10px" }}>
-                            <label className="label">{label}</label>
-                            <input className="input" value={contact[key as keyof typeof contact]} onChange={(e) => setContact({ ...contact, [key]: e.target.value })} placeholder={placeholder} />
+                        { id: "quote-customer-name", key: "customerName", label: "Customer Name", placeholder: "e.g. John Smith" },
+                        { id: "quote-company-name", key: "company", label: "Company", placeholder: "e.g. ABC Electrical Contractors" },
+                        { id: "quote-address", key: "address", label: "Address", placeholder: "e.g. Plot 12, Industrial Area, Karachi" },
+                        { id: "quote-phone", key: "phone", label: "Phone", placeholder: "e.g. +92 300 1234567" },
+                        { id: "quote-email", key: "email", label: "Email", placeholder: "e.g. procurement@abcelectrical.com" },
+                    ].map(({ id, key, label, placeholder }) => (
+                        <div key={key} className="form-group">
+                            <label htmlFor={id} className="label">{label}</label>
+                            <input
+                                id={id}
+                                className="input"
+                                value={contact[key as keyof typeof contact]}
+                                onChange={(e) => setContact({ ...contact, [key]: e.target.value })}
+                                placeholder={placeholder}
+                            />
                         </div>
                     ))}
                 </div>
 
                 {/* Quotation Terms */}
-                <div className="card">
-                    <div style={{ fontWeight: 600, fontSize: "14px", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "14px" }}>Quotation Terms</div>
-                    <div className="form-group" style={{ marginBottom: "10px" }}>
-                        <label className="label">Payment Terms</label>
-                        <input className="input" value={meta.paymentTerms} onChange={(e) => setMeta({ ...meta, paymentTerms: e.target.value })} />
-                    </div>
-                    <div className="form-group" style={{ marginBottom: "10px" }}>
-                        <label className="label">Delivery Terms</label>
-                        <input className="input" value={meta.deliveryTerms} onChange={(e) => setMeta({ ...meta, deliveryTerms: e.target.value })} />
-                    </div>
-                    <div className="form-group" style={{ marginBottom: "10px" }}>
-                        <label className="label">Notes</label>
-                        <textarea className="input" value={meta.notes} onChange={(e) => setMeta({ ...meta, notes: e.target.value })} rows={3} style={{ resize: "vertical" }} placeholder="Optional notes for the customer" />
+                <div className="card space-y-4">
+                    <div className="text-xs font-bold uppercase tracking-wider text-muted">
+                        Quotation Terms
                     </div>
                     <div className="form-group">
-                        <label className="label">Terms & Conditions</label>
-                        <textarea className="input" value={meta.termsAndConditions} onChange={(e) => setMeta({ ...meta, termsAndConditions: e.target.value })} rows={4} style={{ resize: "vertical" }} />
+                        <label htmlFor="quote-payment-terms" className="label">Payment Terms</label>
+                        <input
+                            id="quote-payment-terms"
+                            className="input"
+                            value={meta.paymentTerms}
+                            onChange={(e) => setMeta({ ...meta, paymentTerms: e.target.value })}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="quote-delivery-terms" className="label">Delivery Terms</label>
+                        <input
+                            id="quote-delivery-terms"
+                            className="input"
+                            value={meta.deliveryTerms}
+                            onChange={(e) => setMeta({ ...meta, deliveryTerms: e.target.value })}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="quote-notes" className="label">Notes</label>
+                        <textarea
+                            id="quote-notes"
+                            className="input resize-y min-h-[72px]"
+                            value={meta.notes}
+                            onChange={(e) => setMeta({ ...meta, notes: e.target.value })}
+                            rows={3}
+                            placeholder="Optional notes for the customer"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="quote-terms-conditions" className="label">Terms & Conditions</label>
+                        <textarea
+                            id="quote-terms-conditions"
+                            className="input resize-y min-h-[96px]"
+                            value={meta.termsAndConditions}
+                            onChange={(e) => setMeta({ ...meta, termsAndConditions: e.target.value })}
+                            rows={4}
+                        />
                     </div>
                 </div>
             </div>
 
             {/* Costing Summary */}
-            <div className="card" style={{ marginBottom: "20px" }}>
-                <div style={{ fontWeight: 600, fontSize: "14px", color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "14px" }}>
+            <div className="card space-y-4">
+                <div className="text-xs font-bold uppercase tracking-wider text-muted">
                     Quotation Items ({items.length})
                 </div>
-                <div className="table-container">
-                    <table>
-                        <thead>
+                <div className="table-container rounded-xl border border-border shadow-2xs overflow-x-auto">
+                    <table className="w-full border-collapse">
+                        <thead className="sticky top-0 bg-muted-bg z-10 border-b border-border shadow-2xs">
                             <tr>
-                                <th className="sticky left-0 z-20 bg-muted-bg text-center w-10 shadow-[1px_0_0_0_var(--border)]">#</th>
-                                <th>Code</th><th>Brand</th><th>Description</th>
-                                <th>Qty</th><th>Unit Price</th><th>Total</th>
+                                <th className="sticky left-0 z-20 bg-muted-bg text-center w-12 px-4 py-3 shadow-[1px_0_0_0_var(--border)]">#</th>
+                                <th className="px-4 py-3">Code</th>
+                                <th className="px-4 py-3">Brand</th>
+                                <th className="px-4 py-3">Description</th>
+                                <th className="px-4 py-3">Qty</th>
+                                <th className="px-4 py-3">Unit Price</th>
+                                <th className="px-4 py-3">Total</th>
                             </tr>
                         </thead>
                         <tbody>
                             {items.map((item, i) => (
                                 <tr key={item.id} className="hover:bg-muted-bg/50 transition-colors">
-                                    <td className="sticky left-0 z-10 bg-card-bg text-center text-xs font-semibold text-muted shadow-[1px_0_0_0_var(--border)]">{i + 1}</td>
-                                    <td className="font-semibold text-xs whitespace-nowrap text-foreground">{item.product.productCode}</td>
-                                    <td><span className="badge badge-blue">{item.product.brand}</span></td>
-                                    <td className="text-xs text-foreground">{item.product.description}</td>
-                                    <td className="text-xs">{item.qty}</td>
-                                    <td className="text-xs whitespace-nowrap">{formatCurrency(item.sellingPrice, curr)}</td>
-                                    <td className="font-semibold text-xs text-accent whitespace-nowrap">{formatCurrency(item.totalSelling, curr)}</td>
+                                    <td className="sticky left-0 z-10 bg-card-bg text-center text-xs font-semibold text-muted px-4 py-3 shadow-[1px_0_0_0_var(--border)]">{i + 1}</td>
+                                    <td className="font-semibold text-xs whitespace-nowrap text-foreground px-4 py-3">{item.product.productCode}</td>
+                                    <td className="px-4 py-3"><span className="badge badge-blue">{item.product.brand}</span></td>
+                                    <td className="text-xs text-foreground px-4 py-3">{item.product.description}</td>
+                                    <td className="text-xs px-4 py-3">{item.qty}</td>
+                                    <td className="text-xs whitespace-nowrap px-4 py-3">{formatCurrency(item.sellingPrice, curr)}</td>
+                                    <td className="font-semibold text-xs text-accent whitespace-nowrap px-4 py-3">{formatCurrency(item.totalSelling, curr)}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
-                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px" }}>
-                    <div style={{ minWidth: "280px", background: "var(--muted-bg)", borderRadius: "10px", padding: "14px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "6px" }}>
-                            <span style={{ color: "var(--muted)" }}>Subtotal</span>
-                            <span>{formatCurrency(totals?.subtotalSelling ?? 0, curr)}</span>
+
+                <div className="flex justify-end pt-2">
+                    <div className="min-w-[300px] rounded-xl bg-muted-bg/80 border border-border/70 p-5 space-y-2.5">
+                        <div className="flex justify-between text-xs sm:text-sm">
+                            <span className="text-muted">Subtotal</span>
+                            <span className="font-medium text-foreground">{formatCurrency(totals?.subtotalSelling ?? 0, curr)}</span>
                         </div>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "6px" }}>
-                            <span style={{ color: "var(--muted)" }}>GST ({Math.round((costingSession?.header.gstRate ?? 0.1) * 100)}%)</span>
-                            <span>{formatCurrency(totals?.gstAmount ?? 0, curr)}</span>
+                        <div className="flex justify-between text-xs sm:text-sm">
+                            <span className="text-muted">GST ({Math.round((costingSession?.header.gstRate ?? 0.18) * 100)}%)</span>
+                            <span className="font-medium text-foreground">{formatCurrency(totals?.gstAmount ?? 0, curr)}</span>
                         </div>
-                        <hr className="divider" style={{ margin: "8px 0" }} />
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "16px", fontWeight: 700 }}>
+                        <hr className="divider my-1 border-border/60" />
+                        <div className="flex justify-between text-base font-bold text-foreground">
                             <span>TOTAL</span>
-                            <span style={{ color: "var(--accent)" }}>{formatCurrency(totals?.grandTotal ?? 0, curr)}</span>
+                            <span className="text-accent">{formatCurrency(totals?.grandTotal ?? 0, curr)}</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "center", gap: "16px" }}>
-                <button className="btn-primary" style={{ padding: "12px 32px", fontSize: "15px" }} onClick={handleGenerate}>
+            <div className="flex items-center justify-center gap-4 pt-2">
+                <button
+                    type="button"
+                    className="btn-primary px-8 py-2.5 text-sm font-semibold"
+                    onClick={handleGenerate}
+                >
                     🧾 Generate Quotation
                 </button>
                 {generated && (
-                    <button className="btn-success" style={{ padding: "12px 32px", fontSize: "15px" }} onClick={handleDownloadPDF} disabled={downloadingPDF}>
+                    <button
+                        type="button"
+                        className="btn-success px-8 py-2.5 text-sm font-semibold"
+                        onClick={handleDownloadPDF}
+                        disabled={downloadingPDF}
+                    >
                         {downloadingPDF ? "Opening…" : "📄 Download PDF"}
                     </button>
                 )}
             </div>
         </div>
+    );
     );
 }

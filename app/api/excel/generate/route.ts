@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
         });
 
         const { header, items, totals } = session;
-        const curr = header.currency || "AUD";
+        const curr = header.currency || "PKR";
 
         // ─── Company Header ───────────────────────────────────────────────────────
         ws.mergeCells("A1:L1");

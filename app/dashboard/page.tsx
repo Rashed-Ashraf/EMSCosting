@@ -39,7 +39,7 @@ export default function DashboardPage() {
 
             {/* Active Session Warning Banner */}
             {costingItemCount > 0 && (
-                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm text-amber-900 shadow-2xs">
+                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm text-amber-900 dark:text-amber-300 shadow-2xs">
                     <div className="flex items-center gap-2">
                         <span className="text-base shrink-0">⚠️</span>
                         <span>
@@ -48,7 +48,7 @@ export default function DashboardPage() {
                     </div>
                     <Link
                         href="/costing"
-                        className="font-bold text-amber-700 hover:text-amber-900 hover:underline shrink-0 text-xs sm:text-sm"
+                        className="font-bold text-amber-700 dark:text-amber-400 hover:underline shrink-0 text-xs sm:text-sm"
                     >
                         View Session →
                     </Link>
@@ -94,7 +94,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                 {/* Column 1: Catalogs & Brands */}
                 <div className="card space-y-4">
-                    <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-foreground/90 flex items-center gap-2">
                         <span>📦</span>
                         <span>CATALOGS & BRANDS</span>
                     </h2>
@@ -175,7 +175,7 @@ export default function DashboardPage() {
 
                 {/* Column 2: Quick Actions & Current Costing */}
                 <div className="card space-y-4">
-                    <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-foreground/90 flex items-center gap-2">
                         <span>🚀</span>
                         <span>QUICK ACTIONS</span>
                     </h2>

@@ -218,38 +218,31 @@ export default function RequirementPreviewSection({
             </div>
 
             {/* Quick Metrics Bar */}
-            <div
-                style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-                    gap: "12px",
-                    marginBottom: isCollapsed ? 0 : "18px",
-                }}
-            >
-                <div style={{ background: "var(--muted-bg)", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border)" }}>
-                    <div style={{ fontSize: "11px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 600 }}>Total Items</div>
-                    <div style={{ fontSize: "18px", fontWeight: 800, color: "var(--foreground)", marginTop: "2px" }}>
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 ${isCollapsed ? "" : "mb-4"}`}>
+                <div className="bg-muted-bg/70 p-3 rounded-xl border border-border/80">
+                    <div className="text-[11px] text-muted uppercase font-semibold">Total Items</div>
+                    <div className="text-lg font-extrabold text-foreground mt-0.5">
                         {items.length} Lines
                     </div>
                 </div>
 
-                <div style={{ background: "var(--muted-bg)", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border)" }}>
-                    <div style={{ fontSize: "11px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 600 }}>Identified Brand/Model</div>
-                    <div style={{ fontSize: "18px", fontWeight: 800, color: "var(--accent)", marginTop: "2px" }}>
+                <div className="bg-muted-bg/70 p-3 rounded-xl border border-border/80">
+                    <div className="text-[11px] text-muted uppercase font-semibold">Identified Brand/Model</div>
+                    <div className="text-lg font-extrabold text-accent mt-0.5">
                         {identifiedModelsCount} of {items.length}
                     </div>
                 </div>
 
-                <div style={{ background: "var(--muted-bg)", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border)" }}>
-                    <div style={{ fontSize: "11px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 600 }}>Mentioned Prices in Document</div>
-                    <div style={{ fontSize: "18px", fontWeight: 800, color: "var(--success)", marginTop: "2px" }}>
+                <div className="bg-muted-bg/70 p-3 rounded-xl border border-border/80">
+                    <div className="text-[11px] text-muted uppercase font-semibold">Mentioned Prices in Document</div>
+                    <div className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
                         {pricedCount} Items Priced
                     </div>
                 </div>
 
-                <div style={{ background: "var(--muted-bg)", padding: "10px 14px", borderRadius: "10px", border: "1px solid var(--border)" }}>
-                    <div style={{ fontSize: "11px", color: "var(--muted)", textTransform: "uppercase", fontWeight: 600 }}>Total Mentioned Document Value</div>
-                    <div style={{ fontSize: "18px", fontWeight: 800, color: "var(--success)", marginTop: "2px" }}>
+                <div className="bg-muted-bg/70 p-3 rounded-xl border border-border/80">
+                    <div className="text-[11px] text-muted uppercase font-semibold">Total Mentioned Document Value</div>
+                    <div className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
                         {formatCurrency(totalDocumentPrice, currency)}
                     </div>
                 </div>
@@ -259,32 +252,22 @@ export default function RequirementPreviewSection({
             {!isCollapsed && (
                 <>
                     {/* Filters */}
-                    <div
-                        style={{
-                            display: "flex",
-                            gap: "10px",
-                            alignItems: "center",
-                            marginBottom: "14px",
-                            flexWrap: "wrap",
-                        }}
-                    >
-                        <div style={{ flex: 1, minWidth: "220px", position: "relative" }}>
+                    <div className="flex items-center gap-2.5 mb-3.5 flex-wrap">
+                        <div className="flex-1 min-w-[220px] relative">
                             <input
-                                className="input"
-                                style={{ paddingLeft: "32px", height: "36px", fontSize: "13px" }}
+                                className="input pl-8 h-9 text-xs"
                                 placeholder="Search by description, model, rating (e.g. 200A, NXM-250S)..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
-                            <span style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }}>
+                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted text-xs">
                                 🔍
                             </span>
                         </div>
 
                         {categories.length > 0 && (
                             <select
-                                className="select"
-                                style={{ height: "36px", fontSize: "12px", minWidth: "140px" }}
+                                className="select h-9 text-xs min-w-[140px]"
                                 value={selectedCategory}
                                 onChange={(e) => setSelectedCategory(e.target.value)}
                             >
@@ -297,8 +280,7 @@ export default function RequirementPreviewSection({
 
                         {brands.length > 0 && (
                             <select
-                                className="select"
-                                style={{ height: "36px", fontSize: "12px", minWidth: "130px" }}
+                                className="select h-9 text-xs min-w-[130px]"
                                 value={selectedBrand}
                                 onChange={(e) => setSelectedBrand(e.target.value)}
                             >
@@ -312,13 +294,12 @@ export default function RequirementPreviewSection({
                         {(search || selectedCategory !== "all" || selectedBrand !== "all") && (
                             <button
                                 type="button"
-                                className="btn-ghost btn-sm"
+                                className="btn-ghost btn-sm text-xs"
                                 onClick={() => {
                                     setSearch("");
                                     setSelectedCategory("all");
                                     setSelectedBrand("all");
                                 }}
-                                style={{ fontSize: "12px" }}
                             >
                                 ✕ Reset Filters
                             </button>
@@ -326,19 +307,19 @@ export default function RequirementPreviewSection({
                     </div>
 
                     {/* Extracted Items Table */}
-                    <div className="table-container" style={{ maxHeight: "420px", overflowY: "auto" }}>
-                        <table>
-                            <thead>
+                    <div className="table-container max-h-96 overflow-y-auto rounded-xl border border-border shadow-2xs">
+                        <table className="w-full border-collapse">
+                            <thead className="sticky top-0 bg-muted-bg z-10 border-b border-border shadow-2xs">
                                 <tr>
-                                    <th className="sticky left-0 z-20 bg-muted-bg text-center w-10 shadow-[1px_0_0_0_var(--border)]">#</th>
-                                    <th>Category</th>
-                                    <th>Specification / Requirement</th>
-                                    <th>Brand / Model</th>
-                                    <th>Specs</th>
-                                    <th style={{ textAlign: "center" }}>Qty</th>
-                                    <th style={{ textAlign: "right" }}>Unit Price ({currency})</th>
-                                    <th style={{ textAlign: "right" }}>Total Price ({currency})</th>
-                                    <th style={{ textAlign: "center", width: "160px" }}>Actions</th>
+                                    <th className="sticky left-0 z-20 bg-muted-bg text-center w-10 px-3 py-2.5 shadow-[1px_0_0_0_var(--border)]">#</th>
+                                    <th className="px-3 py-2.5">Category</th>
+                                    <th className="px-3 py-2.5">Specification / Requirement</th>
+                                    <th className="px-3 py-2.5">Brand / Model</th>
+                                    <th className="px-3 py-2.5">Specs</th>
+                                    <th className="px-3 py-2.5 text-center">Qty</th>
+                                    <th className="px-3 py-2.5 text-right">Unit Price ({currency})</th>
+                                    <th className="px-3 py-2.5 text-right">Total Price ({currency})</th>
+                                    <th className="px-3 py-2.5 text-center w-40">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>

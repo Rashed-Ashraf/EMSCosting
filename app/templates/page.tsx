@@ -46,7 +46,6 @@ export default function TemplatesPage() {
             const mappings: TemplateColumnMapping[] = data.headers.map((h: string, i: number) => {
                 const mapped = data.mappings[i];
                 let mappedTo = mapped?.mappedTo ?? "ignore";
-                // Try to map to template-specific fields
                 const hl = h.toLowerCase();
                 if (hl.includes("item")) mappedTo = "item";
                 if (hl.includes("qty") || hl.includes("quantity")) mappedTo = "quantity";
@@ -97,19 +96,25 @@ export default function TemplatesPage() {
     };
 
     return (
-        <div style={{ padding: "28px 32px" }}>
-            {toast && <div className="toast" style={{ borderLeft: "3px solid var(--success)" }}>{toast}</div>}
+        <div className="p-6 sm:p-8 max-w-7xl mx-auto space-y-6">
+            {toast && (
+                <div className="toast border-l-4 border-emerald-500 shadow-md">
+                    {toast}
+                </div>
+            )}
 
-            <div className="page-header">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
                 <div>
-                    <h1 className="section-title" style={{ fontSize: "22px" }}>📄 Templates</h1>
-                    <p style={{ color: "var(--muted)", fontSize: "13px", marginTop: "4px" }}>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                        <span>📄</span> Templates
+                    </h1>
+                    <p className="text-xs sm:text-sm text-muted mt-1">
                         Upload your existing Excel templates to preserve formatting when generating outputs
                     </p>
                 </div>
             </div>
 
-            <div className="grid-2" style={{ marginBottom: "28px" }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Costing Template */}
                 <TemplateCard
                     title="Costing Template"
@@ -136,19 +141,31 @@ export default function TemplatesPage() {
 
             {/* Column Mapping Editor */}
             {editMappings && (
-                <div className="card">
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                <div className="card space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
                         <div>
-                            <h2 className="section-title" style={{ fontSize: "16px" }}>
+                            <h2 className="text-base font-bold text-foreground">
                                 Column Mapping — {editMappings.type === "costing" ? "Costing" : "Quotation"} Template
                             </h2>
-                            <p style={{ color: "var(--muted)", fontSize: "12px", marginTop: "4px" }}>
+                            <p className="text-xs text-muted mt-1">
                                 Map each Excel column to the corresponding field. This tells the system where to write data.
                             </p>
                         </div>
-                        <div style={{ display: "flex", gap: "8px" }}>
-                            <button className="btn-ghost btn-sm" onClick={() => setEditMappings(null)}>Cancel</button>
-                            <button className="btn-primary btn-sm" onClick={handleSaveMappings}>Save Mappings</button>
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                className="btn-ghost btn-sm"
+                                onClick={() => setEditMappings(null)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                className="btn-primary btn-sm"
+                                onClick={handleSaveMappings}
+                            >
+                                Save Mappings
+                            </button>
                         </div>
                     </div>
 
@@ -164,14 +181,15 @@ export default function TemplatesPage() {
                             </thead>
                             <tbody>
                                 {editMappings.mappings.map((m, i) => (
-                                    <tr key={i}>
-                                        <td style={{ fontWeight: 600, color: "var(--accent)" }}>{m.excelColumn}</td>
-                                        <td style={{ color: "var(--muted)" }}>{m.excelHeader}</td>
+                                    <tr key={i} className="hover:bg-muted-bg/50 transition-colors">
+                                        <td className="font-bold text-blue-600 dark:text-blue-400 font-mono">{m.excelColumn}</td>
+                                        <td className="text-muted">{m.excelHeader}</td>
                                         <td>
+                                            <label htmlFor={`map-field-${i}`} className="sr-only">Map field for {m.excelHeader}</label>
                                             <select
-                                                className="select"
+                                                id={`map-field-${i}`}
+                                                className="select text-xs py-1 px-2.5"
                                                 value={m.mappedTo}
-                                                style={{ fontSize: "12px", padding: "4px 8px" }}
                                                 onChange={(e) => {
                                                     const updated = [...editMappings.mappings];
                                                     updated[i] = { ...m, mappedTo: e.target.value };
@@ -195,16 +213,16 @@ export default function TemplatesPage() {
             )}
 
             {/* Info about template usage */}
-            <div className="card" style={{ marginTop: "20px", background: "rgba(61,126,255,0.06)", border: "1px solid rgba(61,126,255,0.2)" }}>
-                <h3 style={{ fontWeight: 600, fontSize: "14px", marginBottom: "10px", color: "var(--accent)" }}>
-                    ℹ️ How Templates Work
+            <div className="card bg-blue-500/5 border border-blue-500/20 p-5 space-y-2">
+                <h3 className="font-semibold text-sm text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+                    <span>ℹ️</span> How Templates Work
                 </h3>
-                <p style={{ fontSize: "13px", color: "var(--muted)", lineHeight: 1.7 }}>
+                <p className="text-xs text-muted leading-relaxed">
                     Upload your existing Excel costing or quotation sheet. The system analyzes the column structure and header names.
                     When you generate a costing or quotation, the output will follow the same column order and can preserve your formatting.
-                    <br /><br />
-                    For the MVP, templates are used to define column order. Full template formatting preservation (merged cells, formulas, styles)
-                    will be available in the database-enabled version.
+                </p>
+                <p className="text-xs text-muted leading-relaxed">
+                    Templates define the target column mapping and layout structure to match your organization&apos;s quotation format.
                 </p>
             </div>
         </div>
@@ -232,11 +250,13 @@ function TemplateCard({ title, icon, template, uploading, onUpload, onEdit, onCl
     };
 
     return (
-        <div className="card">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
+        <div className="card space-y-3">
+            <div className="flex items-start justify-between">
                 <div>
-                    <div style={{ fontWeight: 700, fontSize: "15px" }}>{icon} {title}</div>
-                    <div style={{ fontSize: "12px", color: "var(--muted)", marginTop: "4px" }}>{description}</div>
+                    <div className="font-bold text-base text-foreground flex items-center gap-1.5">
+                        <span>{icon}</span> {title}
+                    </div>
+                    <div className="text-xs text-muted mt-1">{description}</div>
                 </div>
                 {template && (
                     <span className={`badge ${template.status === "ready" || template.status === "mapped" ? "badge-green" : "badge-yellow"}`}>
@@ -246,30 +266,38 @@ function TemplateCard({ title, icon, template, uploading, onUpload, onEdit, onCl
             </div>
 
             {template ? (
-                <div style={{ background: "var(--muted-bg)", borderRadius: "8px", padding: "10px 12px", marginBottom: "12px" }}>
-                    <div style={{ fontWeight: 600, fontSize: "13px", marginBottom: "4px" }}>{template.fileName}</div>
-                    <div style={{ fontSize: "12px", color: "var(--muted)" }}>
+                <div className="p-3 rounded-lg bg-muted-bg/60 border border-border space-y-2">
+                    <div className="font-semibold text-sm text-foreground">{template.fileName}</div>
+                    <div className="text-xs text-muted">
                         Uploaded: {template.uploadDate} · {template.columnMappings.length} columns mapped
                     </div>
-                    <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
-                        <button className="btn-secondary btn-sm" onClick={onEdit}>Edit Mappings</button>
-                        <button className="btn-danger btn-sm" onClick={onClear}>Remove</button>
+                    <div className="flex items-center gap-2 pt-1">
+                        <button type="button" className="btn-secondary btn-sm" onClick={onEdit}>Edit Mappings</button>
+                        <button type="button" className="btn-danger btn-sm" onClick={onClear}>Remove</button>
                     </div>
                 </div>
             ) : (
                 <label
-                    className={`drop-zone ${dragging ? "active" : ""}`}
+                    className={`drop-zone group flex flex-col items-center justify-center p-6 rounded-xl border-2 border-dashed transition-all cursor-pointer ${
+                        dragging
+                            ? "border-blue-600 bg-blue-600/10"
+                            : "border-border hover:border-blue-500 bg-muted-bg/30 hover:bg-muted-bg/60"
+                    }`}
                     onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
                     onDragLeave={() => setDragging(false)}
                     onDrop={(e) => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); }}
                 >
-                    <input type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }} onChange={(e) => handleFile(e.target.files?.[0] || null)} />
-                    <div style={{ fontSize: "24px", marginBottom: "8px" }}>{uploading ? "⏳" : icon}</div>
-                    <div style={{ fontSize: "13px", color: "var(--muted)" }}>
+                    <input
+                        type="file"
+                        accept=".xlsx,.xls,.csv"
+                        className="hidden"
+                        onChange={(e) => handleFile(e.target.files?.[0] || null)}
+                    />
+                    <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">{uploading ? "⏳" : icon}</div>
+                    <div className="text-xs font-semibold text-foreground">
                         {uploading ? "Analyzing template…" : "Drop your template here or click to upload"}
                     </div>
-                    <div style={{ fontSize: "11px", color: "var(--muted)", marginTop: "4px" }}>XLSX · XLS · CSV</div>
-                    {uploading && <div className="spinner" style={{ margin: "12px auto 0" }} />}
+                    <div className="text-[11px] text-muted mt-1">XLSX · XLS · CSV</div>
                 </label>
             )}
         </div>

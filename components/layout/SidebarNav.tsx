@@ -16,9 +16,9 @@ export function SidebarNav() {
     const pathname = usePathname();
 
     return (
-        <nav className="p-2 flex-1 space-y-0.5">
-            <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold px-3 py-2">
-                NAVIGATION
+        <nav className="p-2 flex-1 space-y-1">
+            <div className="text-[10px] uppercase tracking-wider text-muted font-bold px-3 py-2">
+                Navigation
             </div>
             {NAV_ITEMS.map((item) => {
                 const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
@@ -26,13 +26,13 @@ export function SidebarNav() {
                     <Link
                         key={item.href}
                         href={item.href}
-                        className={`flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-r-lg border-l-[3px] transition-all ${
+                        className={`flex items-center gap-2.5 px-3 py-2 text-xs rounded-r-lg border-l-[3px] transition-all duration-150 ${
                             isActive
-                                ? "bg-accent/10 text-accent font-semibold border-accent"
-                                : "text-slate-700 hover:bg-slate-100/70 hover:text-slate-900 border-transparent font-normal"
+                                ? "bg-accent/10 text-accent font-semibold border-accent shadow-2xs"
+                                : "text-foreground/80 hover:bg-muted-bg hover:text-foreground border-transparent font-medium"
                         }`}
                     >
-                        <span className="text-[15px] shrink-0">{item.icon}</span>
+                        <span className="text-sm shrink-0">{item.icon}</span>
                         <span>{item.label}</span>
                     </Link>
                 );
