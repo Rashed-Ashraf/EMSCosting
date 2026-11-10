@@ -193,8 +193,8 @@ export default function CostingPage() {
     }
 
     return (
-        <div className="p-6 sm:p-8 space-y-6 max-w-7xl mx-auto">
-            {toast && <div className="toast" style={{ borderLeft: "3px solid var(--success)" }}>{toast}</div>}
+        <div className="p-6 sm:p-8 space-y-6 w-full">
+            {toast && <div className="toast border-l-4 border-emerald-500 shadow-md">{toast}</div>}
 
             {/* Warning Modal */}
             {showNewWarning && (
@@ -784,8 +784,8 @@ function QuotationStep({ onBack }: { onBack: () => void }) {
     const totals = costingSession?.totals;
 
     return (
-        <div className="p-6 sm:p-8 space-y-6 max-w-7xl mx-auto">
-            {toast && <div className="toast" style={{ borderLeft: "3px solid var(--success)" }}>{toast}</div>}
+        <div className="p-6 sm:p-8 space-y-6 w-full">
+            {toast && <div className="toast border-l-4 border-emerald-500 shadow-md">{toast}</div>}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/60">
                 <div>
                     <button type="button" className="btn-ghost btn-sm mb-2" onClick={onBack}>

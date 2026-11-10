@@ -32,7 +32,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />
-      <main className="flex-1 overflow-auto flex flex-col bg-background border-t-2 border-blue-600">
+      <main className="flex-1 overflow-auto flex flex-col bg-background">
         {children}
       </main>
     </div>
@@ -41,7 +41,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
 
 function Sidebar() {
   return (
-    <aside className="w-[230px] min-w-[230px] bg-sidebar-bg border-r border-sidebar-border border-t-2 border-t-red-600 flex flex-col h-screen overflow-y-auto select-none">
+    <aside className="w-[235px] min-w-[235px] bg-sidebar-bg border-r border-sidebar-border flex flex-col h-screen overflow-y-auto select-none shadow-[1px_0_3px_0_rgba(0,0,0,0.02)]">
       {/* Brand Header */}
       <div className="px-5 py-4 border-b border-sidebar-border">
         <div className="flex items-center gap-1.5 text-red-600 font-extrabold text-xs tracking-wider uppercase">

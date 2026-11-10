@@ -225,7 +225,7 @@ export default function ImportBOQPage() {
     };
 
     return (
-        <div className="p-6 sm:p-8 max-w-7xl mx-auto space-y-6">
+        <div className="p-6 sm:p-8 w-full space-y-6">
             {toast && (
                 <div className="toast border-l-4 border-emerald-500 shadow-md">
                     {toast}

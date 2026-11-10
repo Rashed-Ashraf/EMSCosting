@@ -13,7 +13,7 @@ export default function DashboardPage() {
     const acceptedBoqMatches = boqMatches.filter((m) => m.status === "accepted").length;
 
     return (
-        <div className="p-6 sm:p-8 space-y-6 max-w-7xl mx-auto">
+        <div className="p-6 sm:p-8 space-y-6 w-full">
             {/* Page Header */}
             <div className="page-header">
                 <div>
