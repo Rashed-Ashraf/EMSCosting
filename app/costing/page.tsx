@@ -243,29 +243,33 @@ export default function CostingPage() {
                 />
             )}
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/60">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                    <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
                         <span>🧮</span>
                         <span>New Costing</span>
                     </h1>
-                    {products.length === 0 && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1.5">
+                    {products.length === 0 ? (
+                        <p className="text-sm text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1.5">
                             <span>⚠️</span>
                             <span>No products loaded.</span>
-                            <Link href="/price-lists" className="text-accent hover:underline font-semibold">
+                            <Link href="/price-lists" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">
                                 Upload a price list first →
                             </Link>
                         </p>
+                    ) : (
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                            Search catalog models, configure quantities, adjust margins and calculate client quotations.
+                        </p>
                     )}
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                    <button type="button" className="btn-ghost btn-sm" onClick={handleNewCosting}>
+                <div className="flex items-center gap-3 flex-wrap">
+                    <button type="button" className="btn-ghost" onClick={handleNewCosting}>
                         🔄 New
                     </button>
                     <button
                         type="button"
-                        className="btn-primary btn-sm"
+                        className="btn-primary"
                         onClick={() => {
                             if (requirementItems.length > 0) {
                                 setWizardOpen(true);
@@ -280,7 +284,7 @@ export default function CostingPage() {
                     </button>
                     <button
                         type="button"
-                        className="btn-secondary btn-sm"
+                        className="btn-secondary"
                         onClick={handleDownloadExcel}
                         disabled={downloading || items.length === 0}
                     >
@@ -289,7 +293,7 @@ export default function CostingPage() {
                     </button>
                     <button
                         type="button"
-                        className="btn-primary btn-sm"
+                        className="btn-primary"
                         onClick={() => setShowQuotation(true)}
                         disabled={items.length === 0}
                     >
@@ -300,11 +304,11 @@ export default function CostingPage() {
             </div>
 
             {/* Project Header */}
-            <div className="card space-y-4">
-                <div className="text-xs font-bold uppercase tracking-wider text-muted">
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-6 transition-all duration-200">
+                <div className="text-xl font-semibold text-slate-900 dark:text-white">
                     Project Details
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     <div className="form-group">
                         <label htmlFor="costing-customer-name" className="label">Customer Name</label>
                         <input
@@ -395,21 +399,21 @@ export default function CostingPage() {
             </div>
 
             {/* Requirement File Upload & Guided Review */}
-            <div className="card border border-blue-500/25 bg-blue-50/30 dark:bg-blue-950/20 space-y-3.5">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="rounded-2xl border border-blue-500/25 bg-blue-50/40 dark:bg-blue-950/20 p-6 shadow-sm space-y-4 transition-all duration-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <div className="font-semibold text-sm flex items-center gap-2">
+                        <div className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-2.5">
                             <span>📋 Requirement / BOQ Document Upload</span>
-                            <span className="badge badge-blue text-[11px]">Excel · PDF · Images</span>
+                            <span className="badge badge-blue text-xs">Excel · PDF · Images</span>
                         </div>
-                        <p className="text-xs text-muted mt-1">
-                            Upload any requirement file (spreadsheet, drawing, or photo). System checks models or parses category (MCB, MCCB, ACB), readings (40A, 50A, 3P), and brand, then asks for confirmation on each selected option.
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                            Upload any customer requirement file (spreadsheet, drawing, or photo). System checks models or parses category (MCB, MCCB, ACB), readings (40A, 50A, 3P), and brand, then asks for confirmation on each selected option.
                         </p>
                     </div>
                     {requirementItems.length > 0 && (
                         <button
                             type="button"
-                            className="btn-primary btn-sm shrink-0"
+                            className="btn-primary shrink-0"
                             onClick={() => setWizardOpen(true)}
                         >
                             <span>⚡</span>
@@ -439,14 +443,14 @@ export default function CostingPage() {
             )}
 
             {/* Product Search */}
-            <div className="card space-y-4">
-                <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <div className="text-xs font-bold uppercase tracking-wider text-muted">
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-6 transition-all duration-200">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                    <div className="text-xl font-semibold text-slate-900 dark:text-white">
                         Search & Add Products
                     </div>
                     <Link
                         href="/blind-quotation"
-                        className="btn-secondary btn-sm"
+                        className="btn-secondary"
                     >
                         <span>⚡</span>
                         <span>Blind Spec Finder (No Model #)</span>
@@ -456,18 +460,18 @@ export default function CostingPage() {
                     <label htmlFor="costing-product-search" className="sr-only">Search products</label>
                     <input
                         id="costing-product-search"
-                        className="input pl-9 h-11 text-sm"
+                        className="input pl-11 h-12 text-sm rounded-xl transition-all duration-200"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search: 250A MCCB · Schneider · ABB 4 pole · MCB 32A · LV431630..."
                     />
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">🔍</span>
-                    {searching && <div className="spinner absolute right-3 top-1/2 -translate-y-1/2" />}
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+                    {searching && <div className="spinner absolute right-4 top-1/2 -translate-y-1/2" />}
                 </div>
 
                 {availableBrands.length > 0 && (
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[11px] font-medium text-muted mr-1">Filter Brand:</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mr-1">Filter Brand:</span>
                         <button
                             type="button"
                             className={brandFilter === "all" ? "badge badge-blue cursor-pointer" : "badge badge-gray cursor-pointer"}
@@ -489,20 +493,20 @@ export default function CostingPage() {
                 )}
 
                 {searching && (
-                    <div className="space-y-2 pt-1">
-                        <div className="h-14 rounded-xl animate-pulse bg-muted-bg border border-border/60" />
-                        <div className="h-14 rounded-xl animate-pulse bg-muted-bg border border-border/60" />
+                    <div className="space-y-3 pt-1">
+                        <div className="h-16 rounded-xl animate-pulse bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60" />
+                        <div className="h-16 rounded-xl animate-pulse bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60" />
                     </div>
                 )}
 
                 {products.length === 0 && (
-                    <div className="text-center py-6 text-muted text-xs">
+                    <div className="text-center py-8 text-slate-500 dark:text-slate-400 text-sm">
                         No products indexed. Upload a price list first.
                     </div>
                 )}
 
                 {!searching && searchResults.length > 0 && (
-                    <div className="max-h-80 overflow-y-auto flex flex-col gap-2 pr-1">
+                    <div className="max-h-80 overflow-y-auto flex flex-col gap-2.5 pr-1">
                         {searchResults.map((r) => (
                             <ProductResultCard
                                 key={r.product.id}
@@ -518,9 +522,9 @@ export default function CostingPage() {
                 )}
 
                 {searchQuery && !searching && searchResults.length === 0 && (
-                    <div className="text-center py-4 text-muted text-xs">
+                    <div className="text-center py-6 text-slate-500 dark:text-slate-400 text-sm">
                         No products found for "{searchQuery}". Try the{" "}
-                        <Link href="/blind-quotation" className="text-accent hover:underline font-semibold">
+                        <Link href="/blind-quotation" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">
                             ⚡ Blind Quotation Finder
                         </Link>{" "}
                         to search by electrical readings.
@@ -529,41 +533,41 @@ export default function CostingPage() {
             </div>
 
             {/* Costing Table */}
-            <div className="card space-y-4">
-                <div className="flex items-center justify-between gap-3">
-                    <div className="text-xs font-bold uppercase tracking-wider text-muted">
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-6 transition-all duration-200">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                    <div className="text-xl font-semibold text-slate-900 dark:text-white">
                         Costing Items ({items.length})
                     </div>
                     {items.length > 0 && (
-                        <span className="badge badge-blue font-semibold">
+                        <span className="badge badge-blue font-semibold text-xs">
                             {curr} {totals ? new Intl.NumberFormat().format(totals.grandTotal) : 0} incl. GST
                         </span>
                     )}
                 </div>
 
                 {items.length === 0 ? (
-                    <div className="text-center py-10 text-muted text-sm">
+                    <div className="text-center py-12 text-slate-500 dark:text-slate-400 text-sm">
                         No items added yet. Search for products above or upload a requirement document to add items.
                     </div>
                 ) : (
                     <>
-                        <div className="table-container rounded-xl border border-border shadow-2xs overflow-x-auto">
+                        <div className="table-container rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto">
                             <table className="w-full border-collapse">
-                                <thead className="sticky top-0 bg-muted-bg z-10 border-b border-border shadow-2xs">
+                                <thead className="sticky top-0 bg-slate-50 dark:bg-slate-800/80 z-10 border-b border-slate-200 dark:border-slate-700 shadow-2xs">
                                     <tr>
-                                        <th className="sticky left-0 z-20 bg-muted-bg text-center w-12 px-4 py-3 shadow-[1px_0_0_0_var(--border)]">#</th>
-                                        <th className="px-4 py-3">Product Code</th>
-                                        <th className="px-4 py-3">Brand</th>
-                                        <th className="px-4 py-3">Description</th>
-                                        <th className="px-4 py-3">Qty</th>
-                                        <th className="px-4 py-3">List Price</th>
-                                        <th className="px-4 py-3">Discount</th>
-                                        <th className="px-4 py-3">Net Cost</th>
-                                        <th className="px-4 py-3">Margin</th>
-                                        <th className="px-4 py-3">Selling Price</th>
-                                        <th className="px-4 py-3">Total Cost</th>
-                                        <th className="px-4 py-3">Total Selling</th>
-                                        <th className="px-4 py-3 text-center">Actions</th>
+                                        <th className="sticky left-0 z-20 bg-slate-50 dark:bg-slate-800 text-center w-12 px-4 py-3.5 shadow-[1px_0_0_0_var(--border)]">#</th>
+                                        <th className="px-4 py-3.5">Product Code</th>
+                                        <th className="px-4 py-3.5">Brand</th>
+                                        <th className="px-4 py-3.5">Description</th>
+                                        <th className="px-4 py-3.5">Qty</th>
+                                        <th className="px-4 py-3.5">List Price</th>
+                                        <th className="px-4 py-3.5">Discount</th>
+                                        <th className="px-4 py-3.5">Net Cost</th>
+                                        <th className="px-4 py-3.5">Margin</th>
+                                        <th className="px-4 py-3.5">Selling Price</th>
+                                        <th className="px-4 py-3.5">Total Cost</th>
+                                        <th className="px-4 py-3.5">Total Selling</th>
+                                        <th className="px-4 py-3.5 text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -582,26 +586,26 @@ export default function CostingPage() {
                         </div>
 
                         {/* Totals */}
-                        <div className="flex justify-end mt-4">
-                            <div className="min-w-[300px] rounded-xl bg-muted-bg/80 border border-border/70 p-4 space-y-2">
-                                <div className="flex justify-between text-xs sm:text-sm">
-                                    <span className="text-muted">Subtotal (Cost)</span>
-                                    <span className="font-medium text-foreground">{formatCurrency(totals?.subtotalCost ?? 0, curr)}</span>
+                        <div className="flex justify-end mt-6">
+                            <div className="min-w-[340px] rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-6 space-y-3 shadow-sm">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-500 dark:text-slate-400">Subtotal (Cost)</span>
+                                    <span className="font-medium text-slate-900 dark:text-white">{formatCurrency(totals?.subtotalCost ?? 0, curr)}</span>
                                 </div>
-                                <div className="flex justify-between text-xs sm:text-sm">
-                                    <span className="text-muted">Subtotal (Selling)</span>
-                                    <span className="font-medium text-foreground">{formatCurrency(totals?.subtotalSelling ?? 0, curr)}</span>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-500 dark:text-slate-400">Subtotal (Selling)</span>
+                                    <span className="font-medium text-slate-900 dark:text-white">{formatCurrency(totals?.subtotalSelling ?? 0, curr)}</span>
                                 </div>
-                                <div className="flex justify-between text-xs sm:text-sm">
-                                    <span className="text-muted">GST ({Math.round((header?.gstRate ?? 0.18) * 100)}%)</span>
-                                    <span className="font-medium text-foreground">{formatCurrency(totals?.gstAmount ?? 0, curr)}</span>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-500 dark:text-slate-400">GST ({Math.round((header?.gstRate ?? 0.18) * 100)}%)</span>
+                                    <span className="font-medium text-slate-900 dark:text-white">{formatCurrency(totals?.gstAmount ?? 0, curr)}</span>
                                 </div>
-                                <hr className="divider my-2" />
-                                <div className="flex justify-between text-base font-bold text-foreground">
+                                <hr className="divider my-3" />
+                                <div className="flex justify-between text-base font-bold text-slate-900 dark:text-white">
                                     <span>GRAND TOTAL</span>
-                                    <span className="text-accent">{formatCurrency(totals?.grandTotal ?? 0, curr)}</span>
+                                    <span className="text-blue-600 dark:text-blue-400 text-lg font-extrabold">{formatCurrency(totals?.grandTotal ?? 0, curr)}</span>
                                 </div>
-                                <div className="text-xs text-muted text-right">
+                                <div className="text-xs text-slate-500 dark:text-slate-400 text-right">
                                     {items.length} items · {totals?.totalQty ?? 0} units · Avg margin {formatPercent(totals?.averageMargin ?? 0)}
                                 </div>
                             </div>
@@ -633,31 +637,31 @@ function ProductResultCard({
             : "badge-yellow";
 
     return (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted-bg/60 rounded-xl p-3 border border-border/80 hover:border-accent/40 transition-colors">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200/80 dark:border-slate-700/80 hover:border-blue-500/40 dark:hover:border-blue-500/40 transition-all duration-200">
             <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                     <span className="badge badge-blue">{product.brand}</span>
-                    <span className="font-semibold text-xs text-foreground">{product.productCode}</span>
-                    <span className={`badge font-bold text-[11px] ${badgeColorClass}`}>
+                    <span className="font-semibold text-sm text-slate-900 dark:text-white">{product.productCode}</span>
+                    <span className={`badge font-bold text-xs ${badgeColorClass}`}>
                         {matchLabel || `${confidence}% Match`}
                     </span>
                     {specDetails && (
-                        <span className="text-[11px] bg-emerald-500/10 text-success border border-success/20 px-1.5 py-0.5 rounded-sm font-medium">
+                        <span className="text-xs bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-lg font-medium">
                             ⚡ {specDetails}
                         </span>
                     )}
                 </div>
-                <div className="text-xs text-muted truncate">
+                <div className="text-sm text-slate-600 dark:text-slate-400 truncate">
                     {product.description}
                 </div>
             </div>
-            <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+            <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
                 <div className="text-right whitespace-nowrap">
-                    <div className="text-xs text-muted line-through">{formatCurrency(product.listPrice, currency)}</div>
-                    <div className="font-bold text-sm text-success">{formatCurrency(product.netCost, currency)}</div>
-                    <div className="text-[11px] text-muted">Disc: {formatPercent(product.discount)}</div>
+                    <div className="text-xs text-slate-400 line-through">{formatCurrency(product.listPrice, currency)}</div>
+                    <div className="font-bold text-sm text-emerald-600 dark:text-emerald-400">{formatCurrency(product.netCost, currency)}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">Disc: {formatPercent(product.discount)}</div>
                 </div>
-                <button className="btn-primary btn-sm" onClick={onAdd}>+ Add</button>
+                <button className="btn-primary" onClick={onAdd}>+ Add</button>
             </div>
         </div>
     );
@@ -671,52 +675,52 @@ function CostingRow({ item, index, currency, onUpdate, onRemove }: {
     onRemove: () => void;
 }) {
     return (
-        <tr className="hover:bg-muted-bg/50 transition-colors border-b border-border/50">
-            <td className="sticky left-0 z-10 bg-card-bg text-center text-xs font-semibold text-muted px-4 py-3 shadow-[1px_0_0_0_var(--border)]">{index + 1}</td>
-            <td className="font-semibold text-xs whitespace-nowrap text-foreground px-4 py-3">{item.product.productCode}</td>
-            <td className="px-4 py-3"><span className="badge badge-blue">{item.product.brand}</span></td>
-            <td className="max-w-[220px] truncate text-xs text-foreground px-4 py-3">
+        <tr className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors border-b border-slate-100 dark:border-slate-800">
+            <td className="sticky left-0 z-10 bg-white dark:bg-slate-900 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 px-4 py-3.5 shadow-[1px_0_0_0_var(--border)]">{index + 1}</td>
+            <td className="font-semibold text-sm whitespace-nowrap text-slate-900 dark:text-white px-4 py-3.5">{item.product.productCode}</td>
+            <td className="px-4 py-3.5"><span className="badge badge-blue">{item.product.brand}</span></td>
+            <td className="max-w-[240px] truncate text-sm text-slate-700 dark:text-slate-300 px-4 py-3.5">
                 {item.customDescription || item.product.description}
             </td>
-            <td className="px-4 py-3">
+            <td className="px-4 py-3.5">
                 <input
                     type="number" min="1"
                     aria-label={`Quantity for ${item.product.productCode}`}
-                    className="w-16 bg-input-bg border border-input-border rounded-md text-foreground px-2 py-1 text-xs focus:border-accent outline-none"
+                    className="w-20 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white px-3 py-1.5 text-sm focus:border-blue-500 outline-none transition-all duration-200"
                     value={item.qty}
                     onChange={(e) => onUpdate({ qty: Math.max(1, parseInt(e.target.value) || 1) })}
                 />
             </td>
-            <td className="text-xs text-foreground whitespace-nowrap px-4 py-3">{formatCurrency(item.listPrice, currency)}</td>
-            <td className="whitespace-nowrap px-4 py-3">
+            <td className="text-sm text-slate-900 dark:text-white whitespace-nowrap px-4 py-3.5">{formatCurrency(item.listPrice, currency)}</td>
+            <td className="whitespace-nowrap px-4 py-3.5">
                 <input
                     type="number" min="0" max="100" step="0.5"
                     aria-label={`Discount for ${item.product.productCode}`}
-                    className="w-16 bg-input-bg border border-input-border rounded-md text-foreground px-2 py-1 text-xs focus:border-accent outline-none"
+                    className="w-20 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white px-3 py-1.5 text-sm focus:border-blue-500 outline-none transition-all duration-200"
                     value={Math.round(item.discount * 100)}
                     onChange={(e) => onUpdate({ discount: Math.min(1, Math.max(0, parseFloat(e.target.value) / 100 || 0)) })}
                 />
-                <span className="text-[11px] text-muted ml-1 font-medium">%</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 ml-1.5 font-medium">%</span>
             </td>
-            <td className="font-semibold text-xs text-success whitespace-nowrap px-4 py-3">{formatCurrency(item.netCost, currency)}</td>
-            <td className="whitespace-nowrap px-4 py-3">
+            <td className="font-semibold text-sm text-emerald-600 dark:text-emerald-400 whitespace-nowrap px-4 py-3.5">{formatCurrency(item.netCost, currency)}</td>
+            <td className="whitespace-nowrap px-4 py-3.5">
                 <input
                     type="number" min="0" max="200" step="0.5"
                     aria-label={`Margin for ${item.product.productCode}`}
-                    className="w-16 bg-input-bg border border-input-border rounded-md text-foreground px-2 py-1 text-xs focus:border-accent outline-none"
+                    className="w-20 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white px-3 py-1.5 text-sm focus:border-blue-500 outline-none transition-all duration-200"
                     value={Math.round(item.margin * 100)}
                     onChange={(e) => onUpdate({ margin: Math.max(0, parseFloat(e.target.value) / 100 || 0) })}
                 />
-                <span className="text-[11px] text-muted ml-1 font-medium">%</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 ml-1.5 font-medium">%</span>
             </td>
-            <td className="text-xs text-foreground whitespace-nowrap px-4 py-3">{formatCurrency(item.sellingPrice, currency)}</td>
-            <td className="text-xs text-muted whitespace-nowrap px-4 py-3">{formatCurrency(item.totalCost, currency)}</td>
-            <td className="font-bold text-xs text-accent whitespace-nowrap px-4 py-3">{formatCurrency(item.totalSelling, currency)}</td>
-            <td className="text-center px-4 py-3">
+            <td className="text-sm text-slate-900 dark:text-white whitespace-nowrap px-4 py-3.5">{formatCurrency(item.sellingPrice, currency)}</td>
+            <td className="text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap px-4 py-3.5">{formatCurrency(item.totalCost, currency)}</td>
+            <td className="font-bold text-sm text-blue-600 dark:text-blue-400 whitespace-nowrap px-4 py-3.5">{formatCurrency(item.totalSelling, currency)}</td>
+            <td className="text-center px-4 py-3.5">
                 <button
                     type="button"
                     aria-label={`Remove ${item.product.productCode}`}
-                    className="btn-danger btn-sm px-2.5 py-1"
+                    className="btn-danger px-3 py-1.5 rounded-xl text-xs"
                     onClick={onRemove}
                 >
                     ✕

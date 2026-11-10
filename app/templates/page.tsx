@@ -103,13 +103,13 @@ export default function TemplatesPage() {
                 </div>
             )}
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                    <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
                         <span>📄</span> Templates
                     </h1>
-                    <p className="text-xs sm:text-sm text-muted mt-1">
-                        Upload your existing Excel templates to preserve formatting when generating outputs
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                        Upload your existing Excel templates to preserve styling and layout structure when generating outputs.
                     </p>
                 </div>
             </div>

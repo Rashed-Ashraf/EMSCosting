@@ -194,13 +194,13 @@ export default function PriceListsPage() {
                 </div>
             )}
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                    <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
                         <span>📋</span> Price Lists
                     </h1>
-                    <p className="text-xs sm:text-sm text-muted mt-1">
-                        Upload brand price lists in Excel (.xlsx, .xls), CSV, PDF (.pdf), or Image (.png, .jpg, .webp) formats to build the product index
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                        Upload brand price lists in Excel (.xlsx, .xls), CSV, PDF (.pdf), or Image (.png, .jpg, .webp) formats to build the product index.
                     </p>
                 </div>
             </div>
@@ -219,7 +219,7 @@ export default function PriceListsPage() {
             )}
 
             {/* Upload Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {activeBrands.map((brand) => {
                     const loaded = priceLists.filter((pl) => pl.brand.toLowerCase() === brand.toLowerCase());
                     return (
@@ -419,9 +419,9 @@ function BrandCard({
                 const fileIcon = isPdf ? "📄 " : isImg ? "🖼️ " : "📊 ";
 
                 return (
-                    <div key={pl.id} className="p-2.5 rounded-lg bg-muted-bg/60 border border-border text-xs space-y-1">
+                    <div key={pl.id} className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs space-y-1.5 transition-all duration-200">
                         <div className="flex items-center justify-between">
-                            <span title={pl.fileName} className="font-medium text-foreground truncate max-w-[150px]">
+                            <span title={pl.fileName} className="font-semibold text-slate-900 dark:text-white truncate max-w-[170px]">
                                 {fileIcon}{pl.fileName}
                             </span>
                             <span className={`badge ${pl.status === "ready" ? "badge-green" : pl.status === "error" ? "badge-red" : "badge-yellow"}`}>
@@ -429,19 +429,19 @@ function BrandCard({
                             </span>
                         </div>
                         {pl.productCount > 0 ? (
-                            <div className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                            <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                                 ✅ {pl.productCount.toLocaleString()} products indexed · {pl.uploadDate}
                             </div>
                         ) : (
-                            <div className="text-[11px] font-semibold text-amber-500">
+                            <div className="text-xs font-semibold text-amber-500">
                                 ⚠️ 0 products indexed · Drop file again below
                             </div>
                         )}
-                        {pl.errorMessage && <div className="text-[11px] text-red-500">{pl.errorMessage}</div>}
+                        {pl.errorMessage && <div className="text-xs text-red-500">{pl.errorMessage}</div>}
                         <button
                             type="button"
                             onClick={() => onRemove(pl.id)}
-                            className="w-full text-center py-1 rounded text-[11px] text-red-600 hover:bg-red-500/10 transition-colors font-medium"
+                            className="w-full text-center py-1.5 rounded-lg text-xs text-red-600 hover:bg-red-500/10 transition-colors font-medium"
                         >
                             Remove File
                         </button>

@@ -62,10 +62,10 @@ export function Sidebar() {
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={`group flex items-center justify-between px-3 py-2.5 text-xs font-medium rounded-lg transition-colors duration-200 ${
+                            className={`group flex items-center justify-between px-3 py-2.5 text-xs font-medium rounded-xl transition-all duration-200 ${
                                 isActive
-                                    ? "bg-blue-600/10 text-blue-400 border-r-2 border-blue-600"
-                                    : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/50"
+                                    ? "bg-blue-600/10 text-blue-400 border-r-2 border-blue-600 shadow-sm"
+                                    : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
                             }`}
                         >
                             <div className="flex items-center gap-3">
@@ -106,3 +106,4 @@ export function Sidebar() {
 }
 
 export default Sidebar;
+

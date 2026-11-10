@@ -233,20 +233,20 @@ export default function ImportBOQPage() {
             )}
 
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                    <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
                         <span>📥</span> Import BOQ
                     </h1>
-                    <p className="text-xs sm:text-sm text-muted mt-1">
-                        Upload a customer Bill of Quantities to automatically match products
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                        Upload a customer Bill of Quantities spreadsheet to automatically parse items and match against indexed product catalogs.
                     </p>
                 </div>
                 {boqMatches.length > 0 && (
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-3 flex-wrap">
                         <button
                             type="button"
-                            className="btn-secondary btn-sm"
+                            className="btn-secondary"
                             onClick={handleNewBoq}
                             title="Start a new BOQ upload"
                         >
@@ -256,7 +256,7 @@ export default function ImportBOQPage() {
 
                         <button
                             type="button"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors"
+                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-red-600 hover:bg-red-700 text-white transition-all duration-200 shadow-sm"
                             onClick={handleDeleteBoqCalculation}
                             title="Delete this previous BOQ calculation"
                         >
@@ -266,7 +266,7 @@ export default function ImportBOQPage() {
 
                         <button
                             type="button"
-                            className="btn-secondary btn-sm"
+                            className="btn-secondary"
                             onClick={handleAcceptAll}
                         >
                             ✅ Accept High-Confidence
@@ -274,7 +274,7 @@ export default function ImportBOQPage() {
 
                         <button
                             type="button"
-                            className="btn-primary btn-sm"
+                            className="btn-primary"
                             disabled={!boqMatches.some((m) => m.status === "accepted")}
                             onClick={handleAddToCosting}
                         >
@@ -285,7 +285,7 @@ export default function ImportBOQPage() {
             </div>
 
             {products.length === 0 && (
-                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs sm:text-sm text-amber-600 dark:text-amber-400">
+                <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 text-sm text-amber-700 dark:text-amber-400">
                     ⚠️ No products indexed.{" "}
                     <Link href="/price-lists" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
                         Upload a price list first →

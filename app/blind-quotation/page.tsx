@@ -132,20 +132,20 @@ export default function BlindQuotationPage() {
             )}
 
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                    <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
                         <span className="text-amber-500">⚡</span> Blind Quotation & Spec Finder
                     </h1>
-                    <p className="text-xs sm:text-sm text-muted mt-1">
-                        Find catalog model codes, specs, and live pricing when the client gives only the <strong className="text-foreground">Brand</strong> and <strong className="text-foreground">Electrical Readings (Amps, Poles, kA, kW)</strong> without a model number.
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                        Find catalog model codes, specs, and live pricing when the client gives only the <strong className="text-slate-900 dark:text-white font-semibold">Brand</strong> and <strong className="text-slate-900 dark:text-white font-semibold">Electrical Readings (Amps, Poles, kA, kW)</strong> without a model number.
                     </p>
                 </div>
-                <div className="flex items-center gap-2.5 shrink-0">
+                <div className="flex items-center gap-3 shrink-0">
                     {costingSession && costingSession.items.length > 0 && (
                         <Link
                             href="/costing"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card-bg text-xs font-semibold text-foreground hover:bg-muted-bg transition-colors shadow-xs"
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-200 shadow-2xs"
                         >
                             <span>🧮</span>
                             <span>View Costing ({costingSession.items.length} items)</span>
@@ -153,7 +153,7 @@ export default function BlindQuotationPage() {
                     )}
                     <button
                         type="button"
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted hover:text-foreground hover:bg-muted-bg transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
                         onClick={handleClearAll}
                     >
                         <span>🔄</span>
@@ -164,7 +164,7 @@ export default function BlindQuotationPage() {
 
             {/* Warning if no products loaded */}
             {products.length === 0 && (
-                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs sm:text-sm text-amber-600 dark:text-amber-400">
+                <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 text-sm text-amber-700 dark:text-amber-400">
                     ⚠️ No price lists or products indexed yet.{" "}
                     <Link href="/price-lists" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
                         Upload a price list (Schneider, ABB, Siemens, etc.) first →
@@ -173,14 +173,14 @@ export default function BlindQuotationPage() {
             )}
 
             {/* Mode Switcher Tabs */}
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3">
                 <button
                     type="button"
                     onClick={() => setMode("smart")}
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
                         mode === "smart"
                             ? "bg-blue-600 text-white shadow-sm ring-2 ring-blue-600/20"
-                            : "bg-card-bg text-muted hover:text-foreground border border-border hover:bg-muted-bg"
+                            : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60 shadow-2xs"
                     }`}
                 >
                     <span>🧠</span>
@@ -189,10 +189,10 @@ export default function BlindQuotationPage() {
                 <button
                     type="button"
                     onClick={() => setMode("guided")}
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
                         mode === "guided"
                             ? "bg-blue-600 text-white shadow-sm ring-2 ring-blue-600/20"
-                            : "bg-card-bg text-muted hover:text-foreground border border-border hover:bg-muted-bg"
+                            : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60 shadow-2xs"
                     }`}
                 >
                     <span>🎛️</span>
