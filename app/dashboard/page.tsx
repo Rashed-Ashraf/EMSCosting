@@ -2,6 +2,8 @@
 
 import { useEmsStore } from "@/stores/appStore";
 import Link from "next/link";
+import { StatCard } from "@/components/ui/StatCard";
+import { QuickAction } from "@/components/ui/QuickAction";
 import {
     Calculator,
     Upload,
@@ -260,66 +262,5 @@ export default function DashboardPage() {
                 )}
             </div>
         </div>
-    );
-}
-
-function StatCard({
-    label,
-    value,
-    subtitle,
-    icon,
-}: {
-    label: string;
-    value: string;
-    subtitle: string;
-    icon: React.ReactNode;
-}) {
-    return (
-        <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
-            <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider">{label}</span>
-                <div className="text-neutral-400 dark:text-neutral-500">{icon}</div>
-            </div>
-            <div className="mt-4">
-                <div className="text-2xl font-bold text-neutral-900 dark:text-white">{value}</div>
-                <div className="text-xs text-neutral-500 mt-1">{subtitle}</div>
-            </div>
-        </div>
-    );
-}
-
-function QuickAction({
-    icon,
-    iconBg,
-    title,
-    description,
-    href,
-}: {
-    icon: React.ReactNode;
-    iconBg: string;
-    title: string;
-    description: string;
-    href: string;
-}) {
-    return (
-        <Link
-            href={href}
-            className="flex items-center justify-between p-3 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-colors group"
-        >
-            <div className="flex items-center gap-3 min-w-0">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}>
-                    {icon}
-                </div>
-                <div className="min-w-0">
-                    <div className="text-sm font-medium text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
-                        {title}
-                    </div>
-                    <div className="text-xs text-neutral-500 truncate">{description}</div>
-                </div>
-            </div>
-            <span className="text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-200 text-sm transition-transform group-hover:translate-x-0.5 shrink-0 ml-2">
-                →
-            </span>
-        </Link>
     );
 }
