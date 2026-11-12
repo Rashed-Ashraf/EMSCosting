@@ -31,9 +31,9 @@ export default function RootLayout({
 
 function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen overflow-hidden bg-[#f8fafc]">
       <Sidebar />
-      <main className="flex-1 overflow-auto flex flex-col bg-[#fafafa] dark:bg-background min-w-0">
+      <main className="flex-1 overflow-auto flex flex-col bg-[#f8fafc] min-w-0 border-t-[3px] border-[#1d4ed8]">
         {children}
       </main>
     </div>
